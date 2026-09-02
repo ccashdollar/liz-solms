@@ -1,0 +1,127 @@
+{
+ "_note": "Approximate positions of each collage element on the 1366x3325 comp, found by template-matching the assets against a render of Liz Solms Page.pdf. x/y/w/h are CSS px at the 1366 artboard width. err is match error: below ~0.06 is reliable; above that the element is heavily overlapped in the comp and the position needs checking against the .ai file before use.",
+ "_artboard": {
+  "w": 1366,
+  "h": 3325
+ },
+ "frond-right": {
+  "x": 816,
+  "y": 0,
+  "w": 503,
+  "h": 817,
+  "err": 0.24821,
+  "confident": false
+ },
+ "liz": {
+  "x": 887,
+  "y": 134,
+  "w": 303,
+  "h": 686,
+  "err": 0.00397,
+  "confident": true
+ },
+ "paint-teal-splatter": {
+  "x": 38,
+  "y": 263,
+  "w": 1328,
+  "h": 1672,
+  "err": 0.12599,
+  "confident": false
+ },
+ "strip-blue": {
+  "x": 677,
+  "y": 806,
+  "w": 689,
+  "h": 185,
+  "err": 0.09393,
+  "confident": false
+ },
+ "paint-left": {
+  "x": 25,
+  "y": 1021,
+  "w": 413,
+  "h": 1000,
+  "err": 0.00237,
+  "confident": true
+ },
+ "strip-yellow-tall": {
+  "x": 1254,
+  "y": 1126,
+  "w": 95,
+  "h": 1399,
+  "err": 0.00076,
+  "confident": true
+ },
+ "paint-green-blob": {
+  "x": 439,
+  "y": 1141,
+  "w": 545,
+  "h": 261,
+  "err": 0.05797,
+  "confident": true
+ },
+ "strip-yellow-top": {
+  "x": 0,
+  "y": 1268,
+  "w": 889,
+  "h": 156,
+  "err": 0.1131,
+  "confident": false
+ },
+ "paper-left": {
+  "x": 95,
+  "y": 1270,
+  "w": 545,
+  "h": 1639,
+  "err": 0.04932,
+  "confident": true
+ },
+ "diving": {
+  "x": 569,
+  "y": 1970,
+  "w": 664,
+  "h": 827,
+  "err": 0.01146,
+  "confident": true
+ },
+ "paper-right": {
+  "x": 0,
+  "y": 2026,
+  "w": 379,
+  "h": 934,
+  "err": 0.05368,
+  "confident": true
+ },
+ "paint-multicolor": {
+  "x": 252,
+  "y": 2069,
+  "w": 1090,
+  "h": 1202,
+  "err": 0.33627,
+  "confident": false
+ },
+ "paper-teal-bottom": {
+  "x": 20,
+  "y": 2748,
+  "w": 680,
+  "h": 564,
+  "err": 0.05507,
+  "confident": true
+ },
+ "strip-pink-horz": {
+  "x": 376,
+  "y": 2781,
+  "w": 990,
+  "h": 167,
+  "err": 0.01529,
+  "confident": true
+ },
+ "paper-pink-bottomright": {
+  "x": 998,
+  "y": 3099,
+  "w": 366,
+  "h": 159,
+  "err": 0.00151,
+  "confident": true
+ }
+}

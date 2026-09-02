@@ -1,0 +1,345 @@
+/* ============================================================
+   LIZ SOLMS — BASE STYLES
+   Stage 1: readable, accessible, single-column.
+   The collage layout comes next; this file establishes the
+   typographic foundation everything else sits on.
+   ============================================================ */
+
+/* ---------- RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, p, ul, figure { margin: 0; }
+ul { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;          /* disabled under reduce-motion below */
+  scroll-padding-block-start: var(--space-l);
+}
+
+/* ---------- PAGE ---------- */
+body {
+  background: var(--c-ground);
+  color: var(--c-ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: var(--leading-list);
+  /* Old-style figures suit a Garamond and the literary tone. */
+  font-variant-numeric: oldstyle-num;
+}
+
+/* ---------- TEXT SELECTION ---------- */
+/* ::selection only honours a handful of properties — colour,
+   background-color, text-shadow and -webkit-text-stroke. Setting `color`
+   explicitly is what keeps magenta links legible when they're selected. */
+::selection {
+  background-color: var(--c-selection);
+  color: var(--c-selection-text);
+}
+
+/* ---------- LEGIBILITY ---------- */
+/* text-wrap: pretty asks the browser to avoid leaving a single word alone
+   on the last line of a paragraph. Chrome, Edge and Safari honour it;
+   others ignore it harmlessly. */
+p, li, dd {
+  text-wrap: pretty;
+}
+
+/* text-wrap: balance evens out line lengths across a heading, so a
+   three-word second line doesn't dangle under a full first line. The spec
+   caps it at a handful of lines, which is why it belongs on headings only. */
+h1, h2, h3, .purchase__title, .events__detail {
+  text-wrap: balance;
+}
+
+/* Long unbroken strings — an email address, a URL — will otherwise punch
+   out of their container on a narrow screen. */
+a[href^="mailto:"], .contact__email, .work__outlet {
+  overflow-wrap: break-word;
+}
+
+/* Hyphenation only below 600px, where the measure gets too narrow for a
+   serif to set evenly. Left off on wider screens: hyphens in a literary
+   context read as cramped, and there's no need for them at 62ch.
+   hyphenate-limit-chars keeps it from breaking short words. */
+@media (max-width: 600px) {
+  .bio p, .contact p {
+    hyphens: auto;
+    hyphenate-limit-chars: 7 4 3;
+  }
+}
+
+/* Garamonds carry real ligatures and old-style figures; ask for them.
+   NOTE: deliberately NOT using `text-rendering: optimizeLegibility` — it
+   is widely recommended and widely misunderstood. It silently disables
+   kerning on some Android builds and can stall first paint on long pages.
+   font-feature-settings gets the same result predictably. */
+body {
+  font-variant-ligatures: common-ligatures contextual;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+}
+
+/* Trims the half-leading above cap height and below the baseline, so a
+   heading's visual top edge lands where you expect instead of floating on
+   invisible space. Very new — wrapped in @supports so nothing breaks. */
+@supports (text-box: trim-both cap alphabetic) {
+  h1, h2, .purchase__title {
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+/* Safari only, and purely additive: pulls opening quotes and the like into
+   the margin so the text edge stays optically straight. */
+@supports (hanging-punctuation: first last) {
+  .bio, .contact { hanging-punctuation: first last; }
+}
+
+/* Layout (page shell, bands, collage placement) lives in layout.css. */
+
+/* ---------- SKIP LINK ---------- */
+/* Visible only when focused — lets keyboard users jump the collage. */
+.skip-link {
+  position: absolute;
+  z-index: var(--z-ui);
+  left: var(--space-s);
+  top: var(--space-s);
+  padding: var(--space-xs) var(--space-s);
+  background: var(--c-ink);
+  color: var(--c-ground);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* ---------- HEADINGS ---------- */
+.wordmark {
+  font-family: var(--font-display);
+  font-size: var(--step-4);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wordmark);
+  text-transform: uppercase;
+  max-width: 8ch;          /* forces the two-line break seen in the comp */
+}
+
+/* Section headings are ~38-39px in the comp, not the 22px I first set —
+   solved two independent ways that agree: from the rendered width of
+   "SELECTED PUBLISHED WORK AND REVIEWS" (840px) and "EVENTS +APPEARANCES"
+   (479px), and from the latter's 27px cap height against Black Paint's
+   0.74em cap ratio. --step-3 is 40px at 1366, the nearest step. */
+.section-heading {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 400;
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  margin-bottom: var(--space-m);
+}
+
+/* ---------- BODY COPY ---------- */
+/* Prose runs a step larger than lists — the comp sets bio copy at 27px
+   against 22px list items. */
+.prose {
+  max-width: var(--measure);
+  font-size: var(--step-1);
+  line-height: var(--leading-body);
+}
+.prose p + p { margin-top: var(--space-m); }
+
+/* The comp sets the contact block larger AND tighter than the bio — a
+   deliberate change of voice at the foot of the page, not an accident.
+
+   "Tighter" turns out to be more literal than it first looked. Measured off
+   the comp, every line in this block — the CONTACT heading included — sits
+   on the same 45px rhythm, with NO paragraph separation anywhere: line tops
+   run 2903, 2947, 2992, 3036, 3082, 3127, 3172, evenly spaced to within a
+   pixel. The email address runs straight into "Please note" with nothing
+   between them.
+
+   The build had 24px between the heading and the copy and another 24px
+   before the second paragraph, which broke the block into three pieces and
+   lost the dense, typed-note quality the comp has. So both are zeroed here
+   and the leading carries the whole block instead. */
+.contact.prose {
+  font-size: var(--step-2);
+  line-height: var(--leading-contact);
+}
+.contact.prose p + p { margin-top: 0; }
+.contact .section-heading { margin-bottom: 0; }
+cite { font-style: italic; }
+
+/* ---------- LINKS ---------- */
+a { color: var(--c-link); }
+a:hover { color: var(--c-link-hover); }
+
+/* Underline offset keeps descenders legible in a serif face. */
+a:not(.purchase):not(.skip-link) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+/* A visible focus ring on every interactive element — keyboard users
+   must always be able to see where they are. */
+a:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---------- PURCHASE CTA ---------- */
+/* The CTA's background is the painted blob asset, not a CSS ellipse — the
+   comp's shape has brush edges a border-radius can only approximate.
+   545 x 261 in the comp, so the box carries that aspect ratio and the
+   artwork fills it exactly. */
+.purchase {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-2xs);
+
+  width: min(100%, 34rem);
+  aspect-ratio: 545 / 261;
+
+  /* Inset so the type stays clear of the blob's ragged edges. NOT a
+     percentage: percentage padding resolves against the PARENT's width,
+     not the element's own — `padding: 0 12%` here resolved to 150px a side
+     off the 1254px band, leaving 242px for a title that needs 264, and the
+     title wrapped into the "HERE" below it. rem and vw are predictable. */
+  padding-inline: clamp(1.5rem, 5.2vw, 4.5rem);
+
+  /* justify-items centres each span as a box; this centres the text INSIDE
+     one, which is what a wrapped title needs. Without it a two-line title
+     sets ragged-right against the left edge of its box. */
+  text-align: center;
+
+  background: url("../assets/images/paint-green-blob.webp") center / 100% 100% no-repeat;
+  color: var(--c-ink);         /* 11.5:1 on the green — the comp's magenta
+                                  would be 1.7:1 and unreadable */
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 200ms ease, filter 200ms ease;
+}
+.purchase__kicker { font-size: var(--step--1); letter-spacing: 0.08em; }
+/* Same story: the comp's blob title measures ~385px wide, which solves to
+   38px, not the 27px it was set at. 0.95 x --step-3 lands on 38 rather than
+   40 — at 40 the title is 396px against a 384px content box and wraps,
+   where the comp keeps it on one line. */
+.purchase__title  { font-family: var(--font-display); font-size: calc(var(--step-3) * 0.95); letter-spacing: var(--tracking-cta); }
+.purchase__action { font-size: var(--step--1); letter-spacing: 0.12em; text-decoration: underline; text-underline-offset: 0.2em; }
+
+/* The CTA is a button, not an inline link, so the link-colour system must
+   not reach it. `.purchase` sets black text, but the global `a:hover` rule
+   is more specific and was repainting the label deep magenta on lime green:
+   4.50:1, sitting exactly on the AA threshold, and a harsh pairing besides.
+   Black holds 11.5:1 in every state. */
+.purchase,
+.purchase:link,
+.purchase:visited,
+.purchase:hover,
+.purchase:focus,
+.purchase:focus-visible,
+.purchase:active { color: var(--c-ink); }
+
+/* With colour off the table, the hover affordance is the blob itself: it
+   tilts, grows a little, and darkens. Darkening also RAISES contrast with
+   the black label rather than lowering it. */
+.purchase:hover {
+  transform: rotate(-1.2deg) scale(1.02);
+  filter: brightness(0.94) saturate(1.06);
+}
+.purchase:active { transform: rotate(-0.6deg) scale(0.99); }
+
+/* "HERE" is the part that reads as the actual link; thicken it on hover so
+   there is a second, non-colour signal. */
+.purchase:hover .purchase__action { text-decoration-thickness: 2px; }
+
+/* ---------- LISTS ---------- */
+.work__list li,
+.events__list li {
+  margin-bottom: var(--space-s);
+  font-size: var(--step-0);
+  line-height: var(--leading-list);
+}
+
+.work__outlet { text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ---------- EVENTS ---------- */
+/* Date, then what it is, then where. Stacked rather than in date/detail
+   columns: at 22px in a 26rem column, two columns leave neither enough
+   room. */
+.events__item {
+  display: grid;
+  gap: 0.1em;
+  margin-bottom: var(--space-m);
+}
+
+.events__date {
+  font-variant-numeric: oldstyle-num;
+  font-size: var(--step--1);
+  letter-spacing: 0.03em;
+}
+/* Same element whether or not it links, so an event without a page looks
+   identical apart from the link colour. */
+.events__name { font-size: var(--step-0); }
+
+a.events__name {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+  /* A long event title in a 26rem column will otherwise punch out of it. */
+  overflow-wrap: break-word;
+}
+.events__venue { font-size: var(--step--1); font-style: italic; }
+
+/* --- state: nothing upcoming --- */
+/* Both the list and the empty message live in the markup; the modifier on
+   the section swaps them, so the CMS only has to set one class. */
+.events__empty { display: none; max-width: 26rem; }
+
+.events--empty .events__list:not(.events__list--past) { display: none; }
+.events--empty .events__empty { display: block; }
+
+/* --- past appearances --- */
+.events__past { margin-top: var(--space-m); max-width: 26rem; }
+
+.events__past summary {
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  cursor: pointer;
+  /* The default triangle is fine and is the affordance people know; only
+     the spacing needs help. */
+  padding-block: var(--space-2xs);
+}
+.events__past summary:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+.events__past[open] summary { margin-bottom: var(--space-s); }
+
+/* Past entries use the same type as upcoming ones. The collapsed <details>
+   already establishes the hierarchy — shrinking the type as well says the
+   same thing twice, and makes the archive harder to read for no gain. */
+
+/* ---------- COLOPHON ---------- */
+.colophon {
+  font-size: var(--step--1);
+  line-height: var(--leading-list);
+}
+/* <small> carries meaning, not a size — the scale sets the size. */
+.colophon small { font-size: inherit; }
+.colophon p + p { margin-top: var(--space-2xs); }
+
+/* ---------- MOTION ---------- */
+/* Honour the OS "reduce motion" setting — required for WCAG 2.3.3
+   and genuinely important for people with vestibular disorders. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

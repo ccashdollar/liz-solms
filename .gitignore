@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+._*
+
+# working files, not deliverables
+_preview.tgz
+*.tgz
+
+# python scratch from tools/
+__pycache__/
+*.pyc
+.venv/

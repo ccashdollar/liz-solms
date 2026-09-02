@@ -1,0 +1,789 @@
+/* ============================================================
+   LIZ SOLMS — LAYOUT & COLLAGE
+   ============================================================
+
+   HOW THE COLLAGE WORKS
+
+   The comp is a fixed 1366 x 3325 artboard. Translating that literally —
+   every element at an absolute page coordinate — breaks the moment the
+   events list grows: everything below would stay put while the text moved.
+   So instead:
+
+   1. The page is divided into BANDS. Each band holds a chunk of content
+      plus its own decorative layer (.deco), positioned relative to that
+      band. When content grows, its art grows with it.
+
+   2. Positions are % of the band, not pixels, so relationships hold as the
+      page reflows. Sizes are clamp(min, %, max): the % keeps the comp's
+      proportions, the min stops art becoming confetti on a phone, the max
+      stops it ballooning past the 1366 artboard on a wide monitor.
+
+   3. Each element has a ROLE that decides how it behaves when space runs out:
+
+        EDGE-BLEED  anchored to an edge, allowed to run off it. Crops
+                    rather than shrinks — how collage behaves on paper.
+        BACKDROP    sits behind text, stretches with its band.
+        ACCENT      free-floating; scales down, may drop on small screens.
+        CONTENT     real images in the flow (portrait, diving photo).
+
+   All values below were measured off a 1366px render of the comp, not
+   estimated. Percentages are (comp px / 1366) for x, (comp px / band
+   height) for y.
+   ============================================================ */
+
+
+/* ---------- PAGE SHELL ---------- */
+
+/* overflow-x: clip on BOTH html and body. On body alone the html element
+   still scrolls, so bleeding art would create a horizontal scrollbar.
+   `clip` rather than `hidden`: hidden silently turns the element into a
+   scroll container, which breaks position:sticky further down the page. */
+html, body { overflow-x: clip; }
+
+.page {
+  max-width: var(--design-width);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.band { position: relative; padding-inline: var(--gutter); }
+
+/* Scroll-parallax rate normalisation, per band.
+   Art on a band timeline covers its whole travel across the band's PASS —
+   the band's height plus one viewport. A tall band therefore spreads the
+   same movement over more scrolling and reads as slower. Measured at 1366:
+   intro pass 1875, middle 2627, contact 1451, giving 48 / 35 / 45px of
+   movement per screen for identical settings — the middle third of the page
+   visibly lagging the rest for no reason a reader could name.
+   These scales divide that out, so a given --depth-y means the same speed
+   everywhere. */
+.band--intro   { --drift-scale: 1.00; }
+.band--middle  { --drift-scale: 1.40; }
+.band--contact { --drift-scale: 0.78; }
+
+/* The decorative layer. Inert to the pointer, hidden from screen readers
+   via aria-hidden in the markup.
+
+   Deliberately has NO z-index of its own. A z-index here would create a
+   stacking context and trap every child inside it — no piece of art could
+   ever rise above the writing, however high its own z-index. Leaving it
+   `auto` lets each item take its place on the shared layer scale. Same
+   reason .band carries no z-index. */
+.deco { position: absolute; inset: 0; pointer-events: none; }
+
+/* ------------------------------------------------------------
+   DEPTH — how each layer responds to a window wider than the design
+
+   The comp is a 1366 artboard, and an artboard is a VIEWPORT, not a
+   canvas. Art drawn to or past its edge was meant to be cropped by the
+   edge of the screen. Position it inside the 1366 content column and it
+   detaches the moment the window is wider — measured on an earlier
+   build, the frond bled 14px past the right edge at 1366 and then
+   floated 583px inside it at 2560.
+
+   Rather than a hard split between "in the column" and "on the window",
+   every decorative element carries a --depth from 0 to 1:
+
+       0    stays with the writing
+       0.25 drifts slightly — backdrops just behind the text
+       0.5  the middle ground
+       1    welded to the window edge; the crop is preserved exactly
+
+   --overflow is how far the window extends past the design width on each
+   side. An element shifts outward by depth x overflow. At 1366 and below,
+   overflow is 0 and depth does nothing — the comp renders as drawn.
+
+   Above it, the layers separate at different rates and the collage reads
+   as having depth, rather than one flat plane stretching. It is parallax
+   across viewport width rather than across scroll: static for any given
+   window, so nothing moves under the reader.
+   ------------------------------------------------------------ */
+:root {
+  --overflow: max(0px, (100vw - var(--design-width)) / 2);
+}
+
+.deco__item {
+  --depth: var(--depth-flat);
+  --shift: calc(var(--depth) * var(--overflow));
+}
+
+/* Art is sized clamp(min, Xvw, MAX) where MAX is its size in the comp, so
+   past 1366 it stops growing and simply travels. Edge offsets are in rem,
+   not %, so the relationship to the edge is fixed rather than scaling. */
+
+/* Every decorative item declares its own layer below; this is only a
+   floor so nothing is left unlayered. */
+.deco__item {
+  position: absolute;
+  max-width: none;
+  z-index: var(--z-paper);
+}
+
+/* pointer-events stays off on the whole layer, so front-layer art never
+   blocks selecting the text underneath it. */
+
+.masthead, .portrait, .bio, .purchase, .work, .events, .contact {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+
+/* ============================================================
+   BAND 1 — INTRO
+   Comp: text column x72–830 (61%), portrait x880–1190 (22%),
+   frond bleeding off the right edge.
+   ============================================================ */
+
+.band--intro {
+  display: grid;
+  gap: var(--space-l);
+  grid-template-areas: "mark" "portrait" "bio";
+  /* Comp puts the wordmark's cap line at y110 — the page opens on air,
+     which is what lets the paint read as a gesture rather than a banner. */
+  padding-block: clamp(2rem, 0.75rem + 5.5vw, 6rem) var(--space-2xl);
+}
+
+.masthead { grid-area: mark; }
+.bio      { grid-area: bio; }
+
+/* Single column: the portrait would otherwise run the full width and eat
+   most of a phone screen before a word of the writing appears. Cap it and
+   push it right, so it reads as part of the collage rather than a banner. */
+.portrait {
+  /* Mid-depth: as the window widens the portrait drifts outward with the
+     collage instead of staying glued to the text column — but at half the
+     rate of the frond, so it never reaches the edge. */
+  --depth: var(--depth-mid);
+  --shift: calc(var(--depth) * var(--overflow));
+  translate: var(--shift) 0;
+
+  grid-area: portrait;
+  margin: 0;
+  width: min(62%, 15rem);
+  justify-self: end;
+  margin-inline-end: clamp(0rem, 4%, 3rem);
+}
+.portrait__img { width: 100%; height: auto; }
+.portrait__strip { display: none; }
+
+/* 900px is the single-column / two-column boundary. If it changes, the
+   stacked-portrait block below must change with it — they are the same
+   decision described from two sides. */
+@media (min-width: 900px) {
+  .band--intro {
+    /* 1.62fr / 1fr ≈ the comp's 61% / 38% split */
+    grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+    grid-template-areas:
+      "mark  portrait"
+      "bio   portrait";
+    /* The portrait spans both rows and is tall, so `auto auto` rows shared
+       its surplus height between them — which is what pushed the bio away
+       from the wordmark. min-content pins row 1 to the wordmark and lets
+       row 2 absorb the rest. */
+    grid-template-rows: min-content 1fr;
+    column-gap: var(--space-l);
+    /* Comp leaves ~60px between the wordmark's last line and the first
+       line of bio copy. */
+    row-gap: clamp(1.5rem, 0.6rem + 2.6vw, 3.5rem);
+    align-items: start;
+  }
+  /* Comp has the portrait 310px wide against a 1366 artboard. */
+  .portrait {
+    width: min(100%, 20rem);
+    justify-self: start;
+    margin-top: 2%;
+    margin-inline-end: 0;
+  }
+  /* The comp's measure is wide — 758px of body copy. Let it run. */
+  .bio { max-width: 47rem; }
+}
+
+/* --- intro decoration --- */
+
+/* Anything that hangs off the TOP of a band is offset with
+   transform: translateY(), not a negative `top`.
+   Reason: a percentage in `top` resolves against the BAND's height, so a
+   band that grows taller (phone, or a longer bio) drags the art further
+   off-screen until it disappears. A percentage in translateY() resolves
+   against the ELEMENT's own height, which is what "hang half of yourself
+   above the edge" actually means — and it holds at every width. */
+
+/* EDGE-BLEED — yellow strip, top-left corner, running off the left. */
+.d-strip-yellow-top {
+  z-index: var(--z-strip);
+  --depth: var(--depth-far);
+  --depth-y: 0.7;   /* loose corner strip, nothing registered to it */
+  top: 0; left: calc(-6rem - var(--shift));
+  /* Comp shows it 477px wide and ~58px deep at the left edge. The 30rem cap
+     was holding it to 381 x 38 — the max, not the vw term, was the limit. */
+  width: clamp(18rem, 46vw, 36rem);
+  transform: translateY(-45%);
+}
+
+/* BACKDROP — the rainbow smear.
+
+   The full export holds TWO paint masses stacked vertically; the comp uses
+   only the lower one. They touch, so no amount of negative offset separates
+   them cleanly — the artwork is clipped in the .ai file. So the asset is
+   cropped to the lower mass (tools note in README) and simply placed. No
+   transform, no guessing: what you see is the whole file.
+
+   Comp reference: the mass starts at x510, y30 and runs right, disappearing
+   under the frond's torn edge. On --z-paint, so the frond (--z-photo-back)
+   and the portrait (--z-content) overlay it as they do in the comp. */
+.d-paint-top {
+  z-index: var(--z-paint);
+  /* Travels with the frond, not the text: the frond's torn edge cuts
+     across it and that relationship has to survive a wide window.
+
+     top: 0 — flush to the top of the viewport. Any inset leaves a band of
+     bare ground above it, which reads as a mistake rather than as breathing
+     room.
+
+     right: 12%, not 21% — the two must always overlap, and the box edges
+     lie about where that happens. The frond's left edge is a torn diagonal:
+     its ink starts 6.9% into its box near the top but 13.8% in at 20% down,
+     which is exactly the height the smear sits at. The smear's own ink ends
+     at 84% of ITS box, not 100%. Between them that opened a real 33px gap
+     at ~878px while the bounding boxes still showed 62px of overlap.
+     12% keeps ink over ink at every width. */
+  --depth: var(--depth-far);
+  --depth-y: 1;   /* must match .d-frond exactly or a gap opens */
+  top: 0;
+  right: calc(12% - var(--shift));
+  width: clamp(18rem, 53vw, 46rem);
+}
+
+/* INSET FROM THE EDGE — the palm frond.
+
+   It does NOT bleed. Measured off the comp at 1366: the photo sits 19px
+   from the top and 24–29px from the right, an even margin on both sides.
+   One token drives both so they stay equal at every width.
+
+   The translate compensates for transparent padding in the ASSET: the
+   solid photo starts 4.4% down and stops 5.06% short of the right edge.
+   Without it the margin you set is the margin to the FILE's box, not to
+   the photo. (Measure that padding at a high alpha threshold — a faint-edge
+   reading gave 2.8% on the right and left the margin 10px too wide.)
+   Both percentages resolve against the element's own size, so they hold as
+   it scales. */
+.d-frond {
+  z-index: var(--z-photo-back);
+  --depth: var(--depth-far);
+  --depth-y: 1;   /* foreground, and the smear is welded to it */
+  --frond-inset: clamp(0.5rem, 1.7vw, 1.5rem);
+  top: var(--frond-inset);
+  right: calc(var(--frond-inset) - var(--shift));
+  width: clamp(11rem, 32vw, 27rem);
+  transform: translate(5.06%, -4.4%);
+}
+
+/* EDGE-BLEED — blue strip. In the comp its top edge (y795) meets the
+   bottom of the portrait (y800); they touch, they don't overlap. Dropped
+   to sit below the portrait and pinned to the backdrop layer so it can
+   never cut across her. */
+.d-strip-blue {
+  z-index: var(--z-strip);
+  --depth: var(--depth-far);
+  --depth-y: 0.45;   /* passes behind the portrait, which does not move */
+  top: 88%; right: calc(-3rem - var(--shift));
+  width: clamp(16rem, 50vw, 36rem);
+}
+
+/* The teal splatter — wet paint flicked over the collage.
+
+   BEHIND the portrait. In the comp the splatters stop dead at Liz's
+   silhouette: the blob by her waist ends exactly at her edge, and the one
+   near her hip sits on the frond behind her. So it goes above the
+   photographs (--z-photo-back) and below the content (--z-content).
+
+   Scale: the comp runs this asset at ~1328px against a 1366 artboard —
+   essentially the full page width, threading from the portrait down past
+   the purchase blob. It was capped at 42rem (672px), less than half of
+   that, which is why it read as a few stray flecks rather than a gesture
+   across the whole page. */
+.d-splatter {
+  z-index: var(--z-splatter);
+  --depth: var(--depth-mid);
+  --depth-y: 0.8;   /* sits in front of the portrait */
+  top: 28%; left: calc(2% + var(--shift));
+  width: clamp(20rem, 97vw, 84rem);
+}
+
+
+/* ============================================================
+   BAND 2 — PURCHASE / WORK / EVENTS
+   Comp: this band spans y990–2740. Its art must stretch when the
+   CMS adds events, which is why nothing here is pinned in px.
+   ============================================================ */
+
+.band--middle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding-block: var(--space-xl) var(--space-2xl);
+}
+
+/* Centred on the viewport at every width. The page column is centred and
+   the band's padding is symmetric, so centring here IS centring on screen. */
+/* Purchase + published work as one block, so the collage beside them can be
+   anchored to their height rather than the band's. */
+.works-block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.purchase { align-self: center; margin-inline: auto; }
+.work__list { max-width: 44rem; }
+
+/* Single column below 900: the two sections share a left edge and read as
+   one flow, which is right when there is no width to spend. */
+.work, .events { margin-inline-start: 0; }
+
+@media (min-width: 900px) {
+  /* The diving photo runs down into the sage panel in the comp — its bottom
+     edge sits 41px BELOW the panel's top edge, so the two overlap and read
+     as one stack. The build had 132px of clear ground between them instead
+     (96px of band padding plus 36px of min-height slack past the photo),
+     which opened a bare strip across the full width of the page exactly
+     where the comp is at its densest.
+
+     Only above 900px: below that the photo is back in the normal flow and
+     this padding is the only thing separating the two sections. */
+  .band--middle { padding-bottom: var(--space-s); }
+
+  /* The comp does NOT stack these in one column. Measured at 1366, the
+     SELECTED heading starts at x358 (26% of the page) while EVENTS starts
+     at x85 (6%) — hard against the left margin, with the diving photo to
+     its right. That indent is what makes Events read as its own section
+     rather than a continuation of the work list. */
+  .work   { margin-inline-start: clamp(0rem, 23%, 18rem); }
+  .events { margin-inline-start: 0.8rem; }
+}
+
+.events__body { display: grid; gap: var(--space-l); }
+.events__photo { width: min(100%, 26rem); height: auto; }
+
+/* ------------------------------------------------------------
+   THE DIVING PHOTO BELOW 900px
+
+   In the flow it was the worst of both worlds: a full-width block that
+   landed left-aligned UNDER the events list, left a dead area to the right
+   of the short event entries, and then wedged 517px of itself between the
+   events section and the contact band — blocking the join the comp works
+   hard to overlap.
+
+   Out of the flow and pinned to the window edge it does what the rest of the
+   collage does at every other width: sits in the open space beside the text
+   and runs off the edge of the screen.
+
+   TWO THINGS SCALE, IN OPPOSITE DIRECTIONS. The photo's width shrinks with
+   the viewport, and the amount of it hanging past the right edge GROWS as
+   the viewport narrows. Together they mean the visible portion falls from
+   ~35% of the screen at 899px to ~20% at 390px: on a tablet it is a picture
+   beside a list, on a phone it is a sliver of collage at the edge, and the
+   text gets more of the screen exactly when it needs more.
+
+   The custom properties live on .events, not on the image, because
+   .events__body needs them too — custom properties inherit down, and both
+   are its descendants.
+   ------------------------------------------------------------ */
+@media (max-width: 899px) {
+  .events {
+    --photo-w:     clamp(11rem, 40vw, 22rem);
+    --photo-bleed: clamp(0rem, calc(9rem - 12vw), 6rem);
+    --photo-seen:  calc(var(--photo-w) - var(--photo-bleed));
+  }
+
+  /* The photo is positioned against .events__body rather than .events, and
+     that choice does real work: .events__body starts BELOW the heading, so
+     `top: 0` puts the photo alongside the entries instead of alongside
+     "EVENTS + APPEARANCES". Anchored to .events instead, the heading ran
+     into the photo's left edge at 360 and 390 — the two widths where the
+     heading is still nearly full width but the photo has come in furthest.
+
+     Its right edge is unaffected: padding sits inside the border box, so
+     .events__body's padding-box edge is still the section's edge. */
+  .events__body {
+    position: relative;
+    /* Room for the photo even when the list is short — the "no upcoming
+       events" state is two lines, and without this the photo would hang out
+       of the section and over the contact band. 1.244 is the image's own
+       aspect ratio (826/664). */
+    min-height: calc(var(--photo-w) * 1.244 + var(--space-l));
+    /* Holds the entries clear of the part you can actually see. Subtracting
+       the gutter because the body already stops short of the window edge by
+       that much. */
+    padding-inline-end: calc(var(--photo-seen) - var(--gutter) + var(--space-s));
+  }
+
+  .events__photo {
+    position: absolute;
+    z-index: var(--z-photo-back);
+    top: 0;
+    /* -gutter puts its right edge exactly on the window edge; the bleed
+       carries it past. */
+    right: calc(-1 * var(--gutter) - var(--photo-bleed));
+    width: var(--photo-w);
+    max-width: none;
+    height: auto;
+  }
+}
+
+/* Above 900 the diving photo leaves the flow and behaves like the rest of
+   the collage: anchored to the viewport edge rather than to the text
+   column, so it holds its distance from the window as it widens instead of
+   drifting inward. Comp reference: x569–1233 on a 1366 page, its top ~40px
+   above the EVENTS heading.
+
+   In the flow it would also have squeezed the event list into a half-width
+   column; out of it, the list keeps a comfortable measure and the photo
+   sits beside it. */
+@media (min-width: 900px) {
+  .events { position: relative; min-height: clamp(20rem, 57vw, 49rem); }
+
+  .events__photo {
+    --depth: var(--depth-far);
+    /* ZERO, and this is the one place the parallax has to be switched off.
+
+       The photo overlaps the sage panel by design (30–45px), but the two sit
+       in DIFFERENT bands and so run on different timelines. At --depth-far
+       the overlap swung from +30 at rest to -24..-45 under scroll — the join
+       came undone as you scrolled past it, which is how a designed overlap
+       turns into a gap that cannot be reproduced standing still.
+
+       Matching their amplitudes is not enough: two view() timelines are at
+       different progress at the same scroll position, so equal travel still
+       lands on different offsets (measured: 51px of swing even at matched
+       0.25). The only stable answer for a relationship that crosses a band
+       boundary is for neither piece to move. Backdrops that hold text are
+       the right things to hold still anyway.
+
+       Set on the base rule in motion.css, not here, so it holds below 900
+       too. */
+    --shift: calc(var(--depth) * var(--overflow));
+    position: absolute;
+    top: -2rem;
+    right: calc(3.75rem - var(--shift));
+    width: clamp(14rem, 48vw, 42rem);
+    z-index: var(--z-photo-back);
+  }
+
+  /* Keeps the bullets clear of the photo. */
+  .events__list { max-width: 26rem; }
+}
+
+/* --- middle decoration --- */
+
+/* The pink/gold torn collage, left edge.
+
+   Height is tied to the works-block, not to its own aspect ratio. Left to
+   its natural height it overran the block and cut straight through the
+   EVENTS heading between about 1200 and 1600px — the comp's work list is
+   longer than ours, so the same artwork that brackets it there overshoots
+   here. object-fit: cover crops it instead of squashing it, and the band's
+   gap keeps a clear margin below.
+
+   Anchored to the block means it also stretches when the CMS adds work
+   items, which a fixed height would not. */
+.d-paint-left {
+  z-index: var(--z-paint);
+  --depth: var(--depth-far);
+  --depth-y: 0.5;   /* must match .d-paper-left, it sits on it */
+  top: 0;
+  /* Subtract the gutter. This deco layer lives inside .works-block, which
+     sits in the band's CONTENT box — so an offset here starts one gutter
+     (72px) further in than the same offset on a band-level layer. That was
+     placing the collage at x96 when the comp has it at x25, leaving it
+     visibly inset while every other edge element hugged the window. */
+  left: calc(1.5rem - var(--gutter) - var(--shift));
+  /* Scale to the block's height with the aspect ratio INTACT — width
+     follows from height. object-fit: cover was the first attempt and it
+     sliced a hard horizontal edge across artwork whose whole character is
+     its torn edges. Never crop a torn edge; scale it. max-width stops it
+     ballooning if the CMS adds a long run of work items. */
+  height: 100%;
+  width: auto;
+  max-width: clamp(9rem, 32vw, 28rem);
+}
+
+/* BACKDROP — pale paper column behind the work and events lists.
+   Anchored top and bottom so it stretches as events are added: the one
+   element that genuinely must grow with content. */
+.d-paper-left {
+  z-index: var(--z-paper);
+  /* Edge-anchored like the rest of the collage: the comp starts it ~95px
+     from the artboard's left edge, which means 95px from the window.
+
+     Also enlarged. It was ending at y2386 while the comp runs it to y2909,
+     level with the CONTACT heading — the column is meant to carry the eye
+     from the purchase blob all the way to the foot of the page, and cut
+     short it read as sitting too high in the band. Fixed aspect (0.333),
+     so width is what sets height: 528px wide gives ~1587 tall. */
+  --depth: var(--depth-far);
+  --depth-y: 0.5;   /* behind the work list */
+  top: calc(16% + 100px); left: calc(6rem - var(--shift));
+  width: clamp(11rem, 38vw, 33rem);
+}
+
+/* EDGE-BLEED — tall yellow strip, right edge. */
+.d-strip-yellow-tall {
+  z-index: var(--z-strip);
+  --depth: var(--depth-far);
+  --depth-y: 0.7;   /* loose strip */
+  top: 7%; right: calc(1.2rem - var(--shift));
+  width: clamp(1.25rem, 7vw, 6rem);
+}
+
+/* BACKDROP — cream torn paper, right side.
+
+   Corrected: the earlier template match put this 58% down the band. It
+   actually starts at page y≈970 in the comp — immediately below the blue
+   strip — and runs off the right edge of the artboard, where the .ai file
+   crops it. Only its torn left edge is meant to read; the rest is bleed.
+   Sits under the yellow strip, which crosses it in the comp. */
+.d-paper-right {
+  z-index: var(--z-paper);
+  --depth: var(--depth-far);
+  --depth-y: 0.85;   /* free texture bleeding off the right */
+  top: -4%; right: calc(-8rem - var(--shift));
+  width: clamp(9rem, 28vw, 24rem);
+}
+
+
+/* ============================================================
+   BAND 3 — CONTACT
+   Comp: sage panel x20–710 y2745–3305; copy sits on its left
+   portion and overruns to the right.
+   ============================================================ */
+
+.band--contact {
+  position: relative;
+  /* Top padding is small on purpose, and the reason is the collage rather
+     than the copy. In the comp the diving photo runs DOWN INTO the sage
+     panel — measured, the photo's bottom edge sits 41px below the panel's
+     top edge, so the two overlap and the eye reads them as one stack. The
+     build had 96px of band padding here, which pushed the panel 143px BELOW
+     the photo instead, opening a bare gap across the full width of the page
+     exactly where the comp is densest.
+
+     The overlap is also why the panel is on --z-paper and the photo on
+     --z-photo-back: the photo has to land on top of the panel, as it does
+     in the comp. */
+  padding-block: clamp(2rem, 0.75rem + 4vw, 4rem) clamp(4rem, 2rem + 8vw, 9rem);
+  min-height: clamp(22rem, 43%, 34rem);
+}
+
+/* The contact block is inset a little further than the rest of the page.
+   Measured off the comp: body copy sets to a left edge of x74, the contact
+   block to x92 — about 18px more, which stops the copy from hugging the
+   torn left edge of the sage panel it sits on. */
+.contact {
+  max-width: 47rem;
+  padding-top: clamp(1rem, 4%, 4rem);
+  padding-inline-start: clamp(0.4rem, 1.35vw, 1.15rem);
+}
+
+/* BACKDROP — the sage panel the contact copy sits on. */
+.d-paper-teal {
+  z-index: var(--z-paper);
+  --depth: var(--depth-far);
+  --depth-y: 0;      /* holds the contact copy, and the diving photo has to
+                        stay registered to it across a band boundary — see
+                        the note on .events__photo */
+  top: 2%; left: calc(1.2rem - var(--shift));
+  width: clamp(20rem, 51vw, 43rem);
+  /* Lifts the panel far enough for the diving photo to land on it. In % of
+     the element's own height, not the band's — a % in `top` resolves against
+     BAND height, which changes with the events list, and that is how art
+     hanging off a band's top edge ended up off-screen once before. */
+  transform: translateY(-9%);
+}
+
+/* EDGE-BLEED — pink strip, running off the right. */
+.d-strip-pink {
+  z-index: var(--z-strip);
+  --depth: var(--depth-far);
+  --depth-y: 0;      /* must match the sage panel it sits against */
+  top: 6%; right: calc(-2rem - var(--shift));
+  width: clamp(18rem, 48vw, 38rem);
+  /* Rides up with the panel — in the comp the strip's top edge sits level
+     with the diving photo's bottom, about 30px under the panel's top edge,
+     so the three pieces interlock. Left where it was, it floated 74px lower
+     and read as unrelated to either. */
+  transform: translateY(-45%);
+}
+
+/* ACCENT — pink scrap, bottom right. */
+.d-paper-pink {
+  z-index: var(--z-paper);
+  --depth: var(--depth-far);
+  --depth-y: 0.9;   /* free scrap in open ground */
+  top: 62%; right: calc(0rem - var(--shift));
+  width: clamp(8rem, 27vw, 23rem);
+  /* Comp puts this scrap alongside the closing lines of the contact block,
+     not below them: its top edge is 115px above the last line's baseline. */
+  transform: translateY(-22%);
+}
+
+
+/* ============================================================
+   STACKED PORTRAIT  (< 900px — single-column territory)
+
+   This breakpoint MUST match the .band--intro two-column rule above.
+   They were 599 and 900 for a while, and the 300px gap between them was
+   the worst of both worlds: a single-column page carrying a full-length
+   portrait. Measured, the copy started at y747 on a 768px screen — further
+   down than the y555 on a 560px phone. Wider screen, worse result.
+
+   So the treatment is keyed to the LAYOUT MODE, not a device size:
+   wherever the portrait sits above the copy rather than beside it, it is
+   cropped to head-and-mid-torso and the blue bar is pulled up underneath.
+   The bar lands on the crop line and masks the hard cut, so it reads as a
+   deliberate collage edge rather than a truncated photo — and then does
+   the work of separating portrait from copy.
+   ============================================================ */
+
+@media (max-width: 899px) {
+  /* Centred at every width in this range — portrait and bar read as one
+     stacked unit above the copy, not as something pinned to an edge.
+     Capped at 18rem so it grows a little with a tablet's extra room
+     without the copy getting pushed down the page. */
+  .portrait {
+    width: min(58%, 18rem);
+    justify-self: center;
+    margin-inline-end: 0;
+  }
+  .portrait__img {
+    aspect-ratio: 0.8;           /* head to mid-torso, per the study */
+    object-fit: cover;
+    object-position: 50% 0%;     /* keep the head, crop from the bottom */
+  }
+  .portrait__strip {
+    display: block;
+    position: relative;
+    width: 168%;
+    max-width: none;
+    margin-inline-start: -34%;
+    margin-block-start: -11%;    /* overlap the crop line */
+  }
+
+  /* The collage-layer strip is the wide-screen treatment; below 900 the
+     portrait carries its own. */
+  .d-strip-blue { display: none; }
+
+  /* Below 900 the work list runs to the left margin, straight over this
+     collage. Pushed almost entirely off the edge so only its torn right
+     edge reads — at -7rem it still sat under the list items at 3.40:1.
+     Natural aspect here; there is no block height worth matching. */
+  .d-paint-left {
+    left: -11rem;
+    width: 24vw;
+    height: auto;
+    max-width: none;
+  }
+}
+
+
+/* ============================================================
+   COLOPHON
+   Sits below the contact band on the page ground, clear of the sage
+   panel and the pink strip so it stays quiet and legible.
+   ============================================================ */
+.colophon {
+  position: relative;
+  z-index: var(--z-content);
+  padding-inline: var(--gutter);
+  padding-block: 0 clamp(2rem, 1rem + 3vw, 3.5rem);
+  max-width: var(--design-width);
+  margin-inline: auto;
+}
+
+
+/* ============================================================
+   SMALL SCREENS  (< 600px)
+   At this width the collage collides with the text. Three moves:
+   push backdrops further off-edge so only a sliver reads, pull the
+   heaviest accents back, and drop the two that stop earning space.
+   ============================================================ */
+
+@media (max-width: 599px) {
+
+  .d-strip-yellow-top { left: -8rem; transform: translateY(-40%); }
+
+  /* The rainbow smear is the signature of the top of the page — keep it
+     legible rather than letting it slide off the corner. */
+  /* Measured: at 390px the smear was landing behind the wordmark at
+     2.30:1 — the wordmark is large text and still needs 3:1. Pushed right
+     and up so it clears the letterforms and reads as a corner accent. */
+  /* At 320px the wordmark runs to ~130px, so the smear starts right of
+     that. Measured: at left:34% it sat behind the wordmark at 2.89:1. */
+  /* Show more of the ARTWORK, not more pixels. The wordmark owns the
+     top-left, which leaves a fixed ~240px window on the right — widening
+     the element just scales the smear up and crops more of it off. Making
+     it smaller with far less bleed fits more of the painting into that
+     same window: was 92vw hanging 40% off the edge (≈47% of the artwork
+     visible), now 64vw hanging 6% off (≈91% visible).
+
+     64vw is the ceiling, not a taste call: at 72vw the smear reaches back
+     under the wordmark and its backdrop contrast collapses to 1.92:1 on a
+     320px screen. At 64vw it holds 7.86:1. */
+  .d-paint-top        { right: -4%; width: 70vw; top: 0; }
+
+  /* Sized to come just short of the portrait — 8px clear at 390, 11px at
+     566. Swept to find it: 30vw left the corner looking thin at 58px of
+     daylight; 43vw closes to 5px but the smear starts creeping under the
+     wordmark and its backdrop contrast falls from 18.4:1 to 10.8:1. This
+     pair is the largest that leaves the wordmark completely clear. */
+  .d-frond            { right: calc(var(--frond-inset) - var(--shift)); width: 42vw; }
+
+
+  /* Was landing across the second bio paragraph. Dropped below the copy,
+     where it still separates intro from purchase. Decoration never sits
+     on body text at this width — there is no room to lose. */
+  .d-strip-blue       { top: 96%; right: -4rem; width: 84vw; }
+
+  .d-splatter         { top: 26%; left: 0; width: 128vw; opacity: 0.5; }
+
+  .d-paint-left       { left: -6rem; width: 40vw; }
+  .d-paper-left       { left: -3rem; opacity: 0.8; width: 60vw; top: 12%; }
+  .d-paper-right      { right: -5rem; top: -2%; width: 44vw; }
+
+  .d-paper-teal       { left: -4rem; width: 26rem; }
+  .d-strip-pink       { right: -2rem; width: 92vw; }
+
+  /* Dropped: at this width the tall strip reads as a stray line and the
+     pink scrap lands on top of the contact copy. */
+  .d-strip-yellow-tall,
+  .d-paper-pink { display: none; }
+
+  .work, .events { margin-inline-start: 0; }
+}
+
+
+/* ------------------------------------------------------------
+   VERY NARROW  (< 380px)
+
+   The wordmark does not shrink much below 390 — it bottoms out at its
+   clamp minimum — so at 320 it still runs to x186 while the viewport lost
+   70px. The corner graphics have to give that width back: at the sub-600
+   sizes the smear reached under the wordmark and its backdrop contrast
+   fell to 1.94:1. Pulled narrower and further off the right edge here.
+   ------------------------------------------------------------ */
+@media (max-width: 379px) {
+  .d-paint-top { width: 55vw; right: -15%; }
+  .d-frond     { width: 38vw; }
+}
+
+
+/* ============================================================
+   PRINT — strip the collage, keep the writing.
+   ============================================================ */
+@media print {
+  .deco, .events__photo { display: none; }
+  .page { max-width: none; }
+  a { color: inherit; text-decoration: underline; }
+}

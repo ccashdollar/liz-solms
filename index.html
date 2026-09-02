@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Liz Solms — Writer</title>
+  <meta name="description" content="Liz Solms writes short fiction and poetry. Her debut collection, Small Hot Rooms, is forthcoming from Serving House Press in November 2026.">
+
+  <!-- Preload the display face: it renders the wordmark, the first thing
+       anyone sees. Without this the browser only discovers the font after
+       parsing CSS, costing a round trip. -->
+  <link rel="preload" href="assets/fonts/black-paint-web.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- BODY TYPEFACE — PLACEHOLDER. Apple Garamond can't be licensed for web;
+       EB Garamond (SIL OFL) is the closest open substitute. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- Motion is the last sheet in, and the only one that is optional.
+       Delete this link and the script below to ship the site static. -->
+  <link rel="stylesheet" href="css/motion.css">
+
+  <!-- defer: parse now, run after the document is built, block nothing.
+       This script only ADDS motion for browsers without CSS scroll-driven
+       animations (Firefox). If it never loads, the page is simply static. -->
+  <script src="js/motion.js" defer></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main id="main" class="page">
+
+    <!-- ============================================================
+         INTRO — wordmark, bio, portrait
+         Decorative art for this band lives in .deco, anchored to the
+         band itself, so it travels with the content instead of sitting
+         at fixed page coordinates.
+         ============================================================ -->
+    <section class="band band--intro">
+
+      <!-- Art anchored to the VIEWPORT edges: in the comp these run to or
+           past the edge of the artboard, which means the edge of the screen. -->
+      <div class="deco" aria-hidden="true">
+        <img class="deco__item d-strip-yellow-top" src="assets/images/strip-yellow-top.webp"
+             alt="" width="1779" height="313">
+
+        <img class="deco__item d-frond" src="assets/images/frond-right.webp"
+             srcset="assets/images/frond-right-360w.webp 360w,
+                     assets/images/frond-right-600w.webp 600w,
+                     assets/images/frond-right-1006w.webp 1006w"
+             sizes="(min-width: 900px) min(32vw, 27rem), 54vw"
+             alt="" width="1007" height="1635" fetchpriority="high">
+
+        <img class="deco__item d-strip-blue" src="assets/images/strip-blue.webp"
+             alt="" width="1378" height="370" loading="lazy">
+      </div>
+
+      <!-- Art anchored to the CONTENT column: it sits in relation to the
+           writing, so it must travel with the writing, not the window. -->
+      <div class="deco" aria-hidden="true">
+        <!-- Cropped to the lower paint mass only. The full export holds two
+             stacked masses; the comp clips to this one. -->
+        <img class="deco__item d-paint-top" src="assets/images/paint-smear-900w.webp"
+             srcset="assets/images/paint-smear-520w.webp 520w,
+                     assets/images/paint-smear-900w.webp 900w,
+                     assets/images/paint-smear.webp 1659w"
+             sizes="(min-width: 900px) 53vw, 100vw"
+             alt="" width="1659" height="578" fetchpriority="high">
+
+        <img class="deco__item d-splatter" src="assets/images/paint-teal-splatter-700w.webp"
+             srcset="assets/images/paint-teal-splatter-700w.webp 700w,
+                     assets/images/paint-teal-splatter-1328w.webp 1328w"
+             sizes="(min-width: 900px) 56vw, 86vw"
+             alt="" width="2656" height="3344" loading="lazy">
+      </div>
+      </div>
+
+      <header class="masthead">
+        <h1 class="wordmark">Liz Solms</h1>
+      </header>
+
+      <!-- Content image, not decoration: real alt text, no aria-hidden. -->
+      <figure class="portrait">
+        <img class="portrait__img" src="assets/images/liz.webp"
+             srcset="assets/images/liz-260w.webp 260w,
+                     assets/images/liz-400w.webp 400w,
+                     assets/images/liz.webp 606w"
+             sizes="(min-width: 1024px) 22vw, (min-width: 640px) 30vw, 46vw"
+             alt="Liz Solms in profile, outdoors against palm fronds"
+             width="606" height="1373" fetchpriority="high">
+
+        <!-- Small screens only: the blue bar sits directly under the cropped
+             portrait, masking the crop line. On wider screens the bar belongs
+             to the collage layer instead (.d-strip-blue) and bleeds right. -->
+        <img class="portrait__strip" src="assets/images/strip-blue.webp"
+             alt="" aria-hidden="true" width="1378" height="370">
+      </figure>
+
+      <div class="bio prose">
+        <p>
+          Born and raised in downtown Philadelphia, Liz Solms writes short fiction and
+          poetry. She has spent much of her adult life in Jamaica, West Indies. She now
+          splits her time between Jamaica and New Orleans. Her husband and daughter come
+          along. Liz is a two-time Pushcart Prize nominee, a finalist for the Sandy
+          Crimmins National Prize for Poetry, the Breakwater Prize in poetry, and a
+          two-time finalist for both Glimmer Train&rsquo;s New Writer Award and the Letter
+          Review Prize. Liz&rsquo;s writing has been published in <cite>Post Road</cite>,
+          <cite>Wasafiri</cite>, <cite>The Village Voice</cite>,
+          <cite>War Literature &amp; The Arts</cite>, <cite>Diner Journal</cite>, and
+          <cite>Reed Magazine</cite>, among other publications.
+        </p>
+        <p>
+          Liz holds an MFA from Bennington College.<br>
+          Liz&rsquo;s other life is an
+          <!-- TODO: confirm destination URLs with Liz -->
+          <a href="#">agricultural activist</a> and <a href="#">creative director</a>.
+        </p>
+        <p>
+          Her debut collection of short stories, <cite>Small Hot Rooms</cite>, is
+          forthcoming from Serving House Press in November 2026.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         MIDDLE — purchase, published work, events
+         These three share a decorative band: the torn paper column and
+         the yellow edge strip run behind all of them, and must stretch
+         when the CMS adds events.
+         ============================================================ -->
+    <div class="band band--middle">
+
+      <div class="deco" aria-hidden="true">
+        <img class="deco__item d-strip-yellow-tall" src="assets/images/strip-yellow-tall.webp"
+             alt="" width="190" height="2798" loading="lazy">
+
+        <img class="deco__item d-paper-right" src="assets/images/paper-right-440w.webp"
+             srcset="assets/images/paper-right-280w.webp 280w,
+                     assets/images/paper-right-440w.webp 440w,
+                     assets/images/paper-right.webp 758w"
+             sizes="(min-width: 900px) min(28vw, 24rem), 40vw"
+             alt="" width="758" height="1868" loading="lazy">
+      </div>
+
+      <div class="deco" aria-hidden="true">
+        <img class="deco__item d-paper-left" src="assets/images/paper-left-545w.webp"
+             srcset="assets/images/paper-left-340w.webp 340w,
+                     assets/images/paper-left-545w.webp 545w,
+                     assets/images/paper-left-1090w.webp 1090w"
+             sizes="(min-width: 900px) 35vw, 60vw"
+             alt="" width="1091" height="3279" loading="lazy">
+      </div>
+
+      <!-- Purchase + published work share one block so the pink/gold collage
+           can be anchored to THEM. Anchored to the band instead, its bottom
+           landed wherever the band happened to end — which put it straight
+           through the EVENTS heading between roughly 1200 and 1600px. -->
+      <div class="works-block">
+
+        <div class="deco" aria-hidden="true">
+          <img class="deco__item d-paint-left" src="assets/images/paint-left-500w.webp"
+               srcset="assets/images/paint-left-300w.webp 300w,
+                       assets/images/paint-left-500w.webp 500w,
+                       assets/images/paint-left-826w.webp 826w"
+               sizes="(min-width: 900px) min(30vw, 26rem), 44vw"
+               alt="" width="827" height="2001" loading="lazy">
+        </div>
+
+      <!-- PURCHASE CTA — the green blob is this button's background,
+           not collage, so it lives in CSS on the element itself. -->
+      <!-- TODO: swap href for the real bookseller / publisher link -->
+      <a class="purchase" href="#">
+        <span class="purchase__kicker">Purchase</span>
+        <span class="purchase__title">Small Hot Rooms</span>
+        <span class="purchase__action">Here</span>
+      </a>
+
+      <section class="work" aria-labelledby="work-heading">
+        <h2 class="section-heading" id="work-heading">Selected Published Work and Reviews</h2>
+        <ul class="work__list">
+          <!-- TODO: replace each href with the live URL for the piece -->
+          <li><span class="work__title">Last Day on Earth</span> &ndash; <a class="work__outlet" href="#">Reed Magazine</a></li>
+          <li><span class="work__title">The Smell of Water</span> &ndash; <a class="work__outlet" href="#">Flash Fiction Magazine</a></li>
+          <li><span class="work__title">Jungle Room</span> &ndash; <a class="work__outlet" href="#">Break Water Review</a></li>
+          <li><span class="work__title">Small Rooms, Seven Summers</span> &ndash; <a class="work__outlet" href="#">Philadelphia Stories</a></li>
+          <li><span class="work__title">Wasafiri Issue 87</span> &ndash; <a class="work__outlet" href="#">Wasafiri</a></li>
+          <li><span class="work__title">WLA Journal Issue 29</span> &ndash; <a class="work__outlet" href="#">WLA Journal</a></li>
+          <li><span class="work__title">Post Road Issue 26</span> &ndash; <a class="work__outlet" href="#">Post Road Magazine</a></li>
+        </ul>
+      </section>
+      </div><!-- /.works-block -->
+
+      <section class="events" aria-labelledby="events-heading">
+        <h2 class="section-heading" id="events-heading">Events &plus; Appearances</h2>
+
+        <div class="events__body">
+
+          <!-- ============================================================
+               THREE STATES. The CMS renders whichever applies:
+
+               1. UPCOMING EVENTS   — .events__list, the default below
+               2. NONE UPCOMING     — add class "events--empty" to <section>:
+                                      the list hides and .events__empty shows
+               3. PAST APPEARANCES  — .events__past, a native <details>.
+                                      Present in both states; omit it
+                                      entirely if there is no history yet.
+
+               Every date carries <time datetime> so the CMS has a
+               machine-readable value to sort on, and so search engines can
+               read it. Worth upgrading to schema.org/Event markup later —
+               that is what puts readings into Google's event results.
+               ============================================================ -->
+
+          <!-- PLACEHOLDER CONTENT — awaiting real dates from Liz.
+
+               The event NAME carries the link, not the whole row: it is the
+               phrase that describes the destination, which is what a screen
+               reader reads out of a link list. Dates and venues stay plain.
+
+               An event with no page renders the same element as a <span>
+               instead of an <a> — same class, same styling, no link. The CMS
+               should not emit an empty href. -->
+          <ul class="events__list">
+            <li class="events__item">
+              <time class="events__date" datetime="2026-11-12">12 November 2026</time>
+              <!-- TODO: real URLs for each event -->
+              <a class="events__name" href="#"><cite>Small Hot Rooms</cite> launch reading</a>
+              <span class="events__venue">Serving House Press &middot; Philadelphia</span>
+            </li>
+            <li class="events__item">
+              <time class="events__date" datetime="2026-11-20">20 November 2026</time>
+              <a class="events__name" href="#">Reading and conversation</a>
+              <span class="events__venue">Bennington College &middot; Vermont</span>
+            </li>
+            <li class="events__item">
+              <time class="events__date" datetime="2026-12-04">4 December 2026</time>
+              <a class="events__name" href="#">Poetry night</a>
+              <span class="events__venue">Treasure Beach &middot; Jamaica</span>
+            </li>
+            <li class="events__item">
+              <time class="events__date" datetime="2027-01-22">22 January 2027</time>
+              <a class="events__name" href="#">Panel: writing place</a>
+              <span class="events__venue">New Orleans Book Festival</span>
+            </li>
+            <li class="events__item">
+              <time class="events__date" datetime="2027-02-14">14 February 2027</time>
+              <a class="events__name" href="#">Reading with <cite>Philadelphia Stories</cite></a>
+              <span class="events__venue">Philadelphia</span>
+            </li>
+          </ul>
+
+          <!-- Shown only when the list above is empty. An empty state should
+               offer somewhere to go, not just apologise — here it points at
+               the zine, which is the one thing a reader can act on. -->
+          <p class="events__empty">
+            No readings on the calendar just now. Liz announces new dates in her
+            zine <cite>Ongoing</cite> &mdash;
+            <a href="mailto:Liz.solms.writer@gmail.com?subject=Ongoing">write to her</a>
+            to subscribe.
+          </p>
+
+          <!-- Past appearances. A native <details> — keyboard accessible,
+               announced correctly by screen readers, no JavaScript. Collapsed
+               so a long history never buries what is coming next, but present
+               so the page still has substance between engagements. -->
+          <details class="events__past">
+            <summary>Past appearances</summary>
+            <ul class="events__list events__list--past">
+              <li class="events__item">
+                <time class="events__date" datetime="2026-09-18">18 September 2026</time>
+                <span class="events__name">Reading</span>
+                <span class="events__venue">Blue Mountain Project &middot; Jamaica</span>
+              </li>
+              <li class="events__item">
+                <time class="events__date" datetime="2026-06-05">5 June 2026</time>
+                <span class="events__name">Sandy Crimmins Prize finalists&rsquo; reading</span>
+                <span class="events__venue">Philadelphia</span>
+              </li>
+              <li class="events__item">
+                <time class="events__date" datetime="2026-03-21">21 March 2026</time>
+                <span class="events__name">Craft workshop</span>
+                <span class="events__venue">Bennington Writing Seminars &middot; Vermont</span>
+              </li>
+            </ul>
+          </details>
+
+          <img class="events__photo" src="assets/images/diving-664w.webp"
+               srcset="assets/images/diving-400w.webp 400w,
+                       assets/images/diving-664w.webp 664w,
+                       assets/images/diving-1328w.webp 1328w"
+               sizes="(min-width: 900px) 48vw, 72vw"
+               alt="" width="1329" height="1654" loading="lazy">
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================
+         CONTACT
+         ============================================================ -->
+    <section class="band band--contact" aria-labelledby="contact-heading">
+
+      <div class="deco" aria-hidden="true">
+        <img class="deco__item d-paper-teal" src="assets/images/paper-teal-bottom.webp"
+             alt="" width="1360" height="1128" loading="lazy">
+        <img class="deco__item d-strip-pink" src="assets/images/strip-pink-horz.webp"
+             alt="" width="1980" height="335" loading="lazy">
+        <img class="deco__item d-paper-pink" src="assets/images/paper-pink-bottomright.webp"
+             alt="" width="733" height="319" loading="lazy">
+      </div>
+
+      <div class="contact prose">
+        <h2 class="section-heading" id="contact-heading">Contact</h2>
+        <p>
+          To reach Liz and/or subscribe to her zine <cite>Ongoing</cite>
+          you can email her here:<br>
+          <a class="contact__email" href="mailto:Liz.solms.writer@gmail.com">Liz.solms.writer@gmail.com</a>
+        </p>
+        <p>
+          Please note <cite>Ongoing</cite> is a printed zine only available by mail.<br>
+          Please provide your physical address.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         COLOPHON
+
+         <small> is the correct element here — the spec names copyright
+         and legal small print as exactly its purpose. It is NOT a font
+         size; the size comes from CSS.
+
+         The year is in <time datetime="2026"> so it is machine-readable.
+
+         IMPORTANT FOR THE CMS: render the year server-side from the
+         current date. A hardcoded year is the single most common way a
+         site announces it has been abandoned, and it happens silently
+         every January.
+         ============================================================ -->
+    <footer class="colophon">
+      <p>
+        <small>
+          &copy; <time datetime="2026">2026</time> Liz Solms.
+          All rights reserved.
+        </small>
+      </p>
+
+      <!-- Optional credits — uncomment whichever apply.
+      <p>
+        <small>
+          Site by <a href="https://cashdollardesign.com">Cashdollar Design</a>.
+          Portrait by <a href="#">Photographer Name</a>.
+        </small>
+      </p>
+      -->
+    </footer>
+
+  </main>
+</body>
+</html>

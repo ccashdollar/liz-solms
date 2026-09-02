@@ -1,0 +1,494 @@
+/* ==========================================================================
+   MOTION
+   ==========================================================================
+
+   TWO KINDS OF MOTION, DRIVEN TWO DIFFERENT WAYS. The split is the whole
+   design of this file.
+
+     SCROLL-LINKED — the collage parallax. Progress IS the scroll position.
+     Pure CSS scroll-driven animation, no JavaScript, runs on the
+     compositor. Chrome/Edge 115+, Safari 26+; Firefox has not shipped it,
+     so Firefox gets the idle float without the parallax.
+
+     SCROLL-TRIGGERED — every text reveal. The element comes into view, and
+     then a short animation plays on its own clock. Driven by
+     IntersectionObserver in js/motion.js, identically in every browser.
+
+   WHY THE REVEALS ARE NOT SCROLL-LINKED, since that was the first attempt:
+   scroll-linking means every element's opacity is a function of where it
+   sits on screen, so all seven items of a list are at seven different
+   progress values at the same instant. The list renders as a permanent ramp
+   — solid black at the top fading to nearly invisible at the bottom. It
+   reads as broken text rather than as an animation, and no tuning of the
+   range fixes it, because that IS what scroll-linking means. Text wants to
+   arrive at its own pace once seen.
+
+   THE SAFETY RULE THAT GOVERNS THIS WHOLE FILE:
+   nothing is hidden by a static rule. Every "hidden" state exists only
+   inside a keyframe, and the reveal keyframes only run under html.js-motion,
+   which the script sets last. If the CSS loads but the JS fails, if a proxy
+   strips the script, if IntersectionObserver is missing — the page renders
+   fully visible, static and correct. Do NOT add anything like `opacity: 0`
+   outside a @keyframes block.
+
+   FOR THE CMS BUILD: this file is self-contained. Deleting the <link> to it
+   and js/motion.js removes all motion and changes nothing else.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. KEYFRAMES
+   ========================================================================== */
+
+/* --- A line of text arriving ------------------------------------------- *
+   Short on purpose. A drawn-out fade on text the reader can already see
+   means they are waiting to read something that is right in front of them,
+   which feels sluggish rather than considered. The rise is small enough to
+   register as settling rather than as sliding in from somewhere.          */
+@keyframes rise-in {
+  from { opacity: 0; translate: 0 var(--rise); }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* --- A paragraph arriving line by line ---------------------------------- *
+   A soft horizontal edge travelling down the block, so each line emerges
+   just after the one above it — the reading order, at reading speed.
+
+   Done with a mask rather than by splitting the text into per-line spans.
+   Splitting is the usual technique and it is a bad trade here: line boxes
+   have to be recomputed on every resize and every font swap, the wrapping
+   elements land in the middle of <a> and <cite> runs, and the DOM the
+   screen reader gets stops matching the DOM the author wrote. A mask
+   changes no markup at all, so selection, links, search-in-page and
+   assistive technology all behave exactly as they do without it.
+
+   The mask is two element-heights tall, opaque across its top half. Sliding
+   it from `0 100%` (the element sees only the empty bottom half) to `0 0`
+   (it sees the solid top half) walks the edge down the block. The feather
+   is set in em, so it stays about a line and a half deep whatever the
+   element's height — a percentage would make a short paragraph fade as one
+   soft block and a long one reveal in hard steps.
+
+   The horizontal -1em offset is headroom for `hanging-punctuation`, which
+   pulls opening quotes outside the element box in Safari, where a mask
+   sized to the box would clip them.                                       */
+@keyframes wipe-in {
+  from { mask-position: -1em 100%; -webkit-mask-position: -1em 100%; }
+  to   { mask-position: -1em 0;    -webkit-mask-position: -1em 0; }
+}
+
+/* --- The wordmark being brushed on -------------------------------------- *
+   The one thing on the page that moves without being asked. It is above the
+   fold, so there is no "scrolled into view" moment to trigger it — it paints
+   itself on once, on load.
+
+   A wipe, but a soft one. The mask is a gradient two and a half times the
+   width of the element, opaque at its left end and feathering to nothing at
+   its right. Sliding it from `100%` (the element sees only the transparent
+   tail) to `0%` (it sees the opaque head) walks the boundary across the
+   letters from left to right.
+
+   The stops are deliberately uneven — 42%, 51%, 60%, 69% at falling alpha
+   rather than a straight ramp. A linear ramp reads as a machine wipe.
+   Uneven stops read as pigment thinning out at the end of a stroke, which
+   is what the display face is imitating anyway.                            */
+@keyframes paint-in {
+  from { mask-position: 100% center; -webkit-mask-position: 100% center; opacity: 0.28; }
+  to   { mask-position: 0% center;   -webkit-mask-position: 0% center;   opacity: 1; }
+}
+
+/* --- The purchase blob coming to rest ----------------------------------- *
+   `scale` and `rotate` are the standalone properties, not `transform`. That
+   matters: .purchase already uses `transform` for its hover state, and
+   animating `transform` here would fight it. The standalone properties
+   compose with transform instead of replacing it. Both land on identity
+   values, so once this finishes it leaves no trace for hover to fight.    */
+@keyframes settle-in {
+  from { opacity: 0; scale: 0.94; rotate: -2deg; }
+  to   { opacity: 1; scale: 1;    rotate: 0deg; }
+}
+
+/* --- Collage parallax: scroll-linked ------------------------------------ *
+   Reuses the --depth token the layout already assigns to every piece of art
+   for its viewport-width behaviour: flat art stays put, far art moves most.
+   Same token, same ordering, now applied to scroll as well — so a layer
+   that pulls toward the window edge as the window widens is the same layer
+   that drifts most as the page scrolls. One idea, two axes.
+
+   `translate` rather than `transform`, because several pieces of art
+   (.d-frond, .d-strip-yellow-top) carry a tuned `transform` offset that has
+   to survive.                                                             */
+@keyframes drift {
+  from { translate: 0 var(--drift); }
+  to   { translate: 0 calc(var(--drift) * -1); }
+}
+
+/* --- Collage float: idle, continuous ------------------------------------ *
+   Runs on its own clock and composes ON TOP of the parallax via
+   `animation-composition: add` — two animations writing to the same
+   `translate` property, summed rather than one overriding the other.
+   Without that keyword the float simply wins and the parallax vanishes with
+   no error anywhere.                                                      */
+@keyframes float {
+  from { translate: 0 var(--float); }
+  to   { translate: 0 calc(var(--float) * -1); }
+}
+
+
+/* ==========================================================================
+   2. STATIC SETUP FOR THE MASKS
+   ==========================================================================
+   Both masks are declared outside every path and parked at their
+   fully-visible position, so on their own they do nothing — they are masks
+   that reveal everything. Only a keyframe moves them. That is what lets a
+   masked element be safe when no animation ever runs.
+   ========================================================================== */
+
+/* The wordmark's horizontal brush sweep.
+
+   THE VERTICAL SIZING IS NOT ARBITRARY. A mask clips to the element's box,
+   and style.css sets `text-box: trim-both` on h1/h2, which shrinks that box
+   to the cap height: measured on a section heading, the box was 27.8px tall
+   while the glyph ink was 33px tall and started 5.2px ABOVE the box. The
+   mask duly shaved the tops off every letter — flat, as though the display
+   face had been guillotined. Black Paint's brushy ascenders are exactly the
+   thing you would notice.
+
+   `calc(100% + 1.6em)` with `center` gives 0.8em of headroom above and
+   below the trimmed box. Adding height in em rather than as a percentage
+   also keeps the gradient's feather roughly the same physical width, so the
+   sweep's softness does not change with the element's height. */
+.wordmark {
+  --mask-brush: linear-gradient(
+      96deg,
+      #000 0%,
+      #000 42%,
+      rgba(0, 0, 0, 0.78) 51%,
+      rgba(0, 0, 0, 0.40) 60%,
+      rgba(0, 0, 0, 0.12) 69%,
+      rgba(0, 0, 0, 0) 76%);
+
+  mask-image: var(--mask-brush);
+  mask-size: 250% calc(100% + 1.6em);
+  mask-repeat: no-repeat;
+  mask-position: 0% center;
+
+  -webkit-mask-image: var(--mask-brush);
+  -webkit-mask-size: 250% calc(100% + 1.6em);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: 0% center;
+}
+
+/* Time-based and unconditional — it needs neither a scroll timeline nor the
+   observer, and a time-based animation with `both` fill always completes,
+   so it cannot strand the wordmark the way a triggered reveal could. */
+.wordmark {
+  animation: paint-in var(--dur-paint) var(--ease-brush) 260ms both;
+}
+
+/* Prose BLOCKS — the whole group, not each paragraph inside it.
+
+   This is what makes the reveal an actual waterfall. Masking each paragraph
+   separately and staggering them does not: with a 1500ms wipe and a 210ms
+   stagger, all three bio paragraphs are mid-reveal at the same time, so
+   what should be a sequence reads as one event with soft edges. Widening
+   the stagger enough to separate them would push the opening screen past
+   three seconds.
+
+   One mask over the whole block instead means one edge, travelling
+   continuously from the first line to the last and straight across the
+   paragraph gaps. Nothing overlaps because there is only ever one thing
+   animating. The stagger problem disappears rather than being tuned. */
+.bio,
+.contact {
+  --mask-line: linear-gradient(
+      180deg,
+      #000 0,
+      #000 calc(50% - 0.15em),
+      rgba(0, 0, 0, 0.55) calc(50% + 0.55em),
+      rgba(0, 0, 0, 0.16) calc(50% + 1.3em),
+      rgba(0, 0, 0, 0) calc(50% + 2.1em));
+
+  mask-image: var(--mask-line);
+  mask-size: calc(100% + 2em) 200%;
+  mask-repeat: no-repeat;
+  mask-position: -1em 0;
+
+  -webkit-mask-image: var(--mask-line);
+  -webkit-mask-size: calc(100% + 2em) 200%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: -1em 0;
+}
+
+
+/* ==========================================================================
+   3. THE COLLAGE LAYERS — distances and phases
+   ==========================================================================
+   Set outside the path blocks so the two paths cannot drift apart.
+
+   Float is scaled by depth but never to zero: `0.4 + depth * 0.6` means the
+   flattest art still breathes at 40% of the maximum while the farthest
+   moves at 100%. Art pinned to the text should move least, not freeze —
+   one motionless layer in a floating collage reads as a mistake.
+   ========================================================================== */
+
+.deco__item,
+.events__photo {
+  /* --depth-y, not --depth, and the distinction is the whole reason the
+     parallax was invisible.
+
+     --depth says how far a piece pulls toward the WINDOW EDGE as the window
+     widens. Reusing it for scroll sounded elegant — one idea, two axes — but
+     the two axes are not asking the same question. "Is this welded to the
+     edge of the screen?" and "how deep in the stack is this?" have different
+     answers, and because nearly all the collage is edge-anchored, twelve of
+     the thirteen pieces came out at --depth-far. They all moved by exactly
+     the same amount. Parallax is only ever perceived as the DIFFERENCE
+     between layers, so a collage where everything moves identically reads as
+     one flat plane sliding — which is to say, as nothing at all.
+
+     --depth-y is set per piece in layout.css by where it sits in the stack,
+     and it defaults to --depth so a new piece still behaves sensibly if
+     nobody sets one. */
+  --drift: calc(var(--depth-y, var(--depth, 0)) * var(--drift-max) * var(--drift-scale, 1));
+  --float: calc((0.4 + var(--depth-y, var(--depth, 0)) * 0.6) * var(--float-max));
+}
+
+/* .events__photo is a content image and never got a --depth from the deco
+   system; it is positioned like far art, so give it far behaviour on the
+   horizontal axis.
+
+   On the SCROLL axis it is pinned. It has to stay registered to the sage
+   panel, which lives in the next band down and therefore on a different
+   timeline — see the note in layout.css. Declared here rather than inside a
+   breakpoint because it is true at every width: the first attempt set it in
+   the >=900 block only, and below 900 the photo quietly fell back to full
+   depth and swung 242px against the panel. */
+.events__photo { --depth: var(--depth-far); --depth-y: 0; }
+
+/* Period and phase, varied per layer. Awkward multipliers so the cycles
+   take a long time to line up again; negative phases start each layer
+   part-way through its arc, so nothing sits waiting at the top when the
+   page loads. Unison is what makes this kind of effect read as a throb
+   rather than as things hanging in air.
+
+   Both are custom properties rather than literal `animation-delay` values
+   because the two paths declare different numbers of animations — one runs
+   drift AND float, the other float alone — so a literal
+   `animation-delay: 0s, -4.7s` would land on the wrong animation. */
+.deco__item:nth-of-type(1) { --period: calc(var(--dur-float) * 1.00); --phase: -1.2s; }
+.deco__item:nth-of-type(2) { --period: calc(var(--dur-float) * 1.37); --phase: -4.7s; }
+.deco__item:nth-of-type(3) { --period: calc(var(--dur-float) * 0.79); --phase: -2.9s; }
+.deco__item:nth-of-type(4) { --period: calc(var(--dur-float) * 1.19); --phase: -6.1s; }
+.deco__item:nth-of-type(5) { --period: calc(var(--dur-float) * 0.91); --phase: -0.4s; }
+.events__photo             { --period: calc(var(--dur-float) * 1.11); --phase: -3.3s; }
+
+
+/* ==========================================================================
+   4. TEXT REVEALS — scroll-triggered, every browser
+   ==========================================================================
+   js/motion.js sets .js-motion on <html> only after confirming the browser
+   can do this and the reader has not asked for less motion, then adds
+   .is-in to each element as it enters view.
+
+   Everything is held at `animation-play-state: paused`, which parks it on
+   frame zero of its keyframe — the hidden state. .is-in sets it running.
+   That is the entire mechanism.
+   ========================================================================== */
+
+/* :where() on every target list below, and the reason matters.
+
+   Without it, `.js-motion .work__list > li` scores one class higher than
+   `.js-motion .is-in` — two classes and an element beats two classes. The
+   paused rule then outranks the running rule, .is-in does nothing, and
+   seven work items plus the events and the contact copy sit at opacity 0
+   permanently. Everything with a plain single-class selector reveals
+   correctly, which is exactly what makes this kind of bug survive a casual
+   look: most of the page works.
+
+   :where() forces its contents to zero specificity, so these rules score on
+   the .js-motion class alone and .is-in reliably wins. Adding a
+   `.events__list > li > span` here later cannot re-break it. */
+
+.js-motion :where(
+  .work .section-heading,
+  .events .section-heading,
+  .bio,
+  .work__list > li,
+  .events__item,
+  .events__empty,
+  .events__past,
+  .contact,
+  .colophon,
+  .purchase) {
+  animation-fill-mode: both;
+  animation-play-state: paused;    /* held on frame zero until observed */
+  animation-timing-function: var(--ease-out);
+}
+
+/* SINGLE ITEMS — a heading, one list row, one short line: a quick fade and
+   settle. Each list item is already a line, so a list reveals line by line
+   with no splitting; the cascade comes from js/motion.js when a whole group
+   arrives at once, and from the scrolling itself when it does not.
+
+   The contact heading is deliberately absent from this list. It lives
+   inside .contact, which reveals as one block below, and animating both the
+   parent and the child would fade the heading twice over. */
+.js-motion :where(
+  .work .section-heading,
+  .events .section-heading,
+  .work__list > li,
+  .events__item,
+  .events__past,
+  .events__empty,
+  .colophon) {
+  animation-name: rise-in;
+  animation-duration: var(--dur-line);
+}
+
+/* PROSE BLOCKS — one edge travelling down the whole group, lines emerging
+   in reading order across paragraph boundaries. */
+.js-motion :where(.bio, .contact) {
+  animation-name: wipe-in;
+  animation-duration: var(--dur-wipe);
+  animation-timing-function: var(--ease-wipe);
+}
+
+.js-motion :where(.purchase) {
+  animation-name: settle-in;
+  animation-duration: var(--dur-settle);
+  animation-timing-function: var(--ease-settle);
+}
+
+/* --- The first screen ---------------------------------------------------
+   Everything above the fold arrives in one go, with no scrolling to space
+   it out. The same timings that feel considered when a block arrives on its
+   own feel like a burst when three arrive together — measured on the
+   original settings, all three bio paragraphs finished within 1100ms and
+   were only 55ms apart, so they moved in near-lockstep and the whole
+   background story assembled itself before the wordmark was halfway
+   painted. The name arrived last, which is backwards.
+
+   js/motion.js marks anything revealed in the first half-second with
+   .is-load, holds it back behind the wordmark's opening stroke, and spaces
+   the blocks roughly three times further apart. These longer durations are
+   the other half of that: on the first screen the page composes itself,
+   and after that it gets out of the way.                                  */
+
+.js-motion :where(
+  .work .section-heading,
+  .events .section-heading,
+  .work__list > li,
+  .events__item,
+  .events__past,
+  .events__empty,
+  .colophon).is-load { animation-duration: var(--dur-line-load); }
+
+.js-motion :where(.bio, .contact).is-load { animation-duration: var(--dur-wipe-load); }
+
+/* The observer's only job. Reliably the winning rule. */
+.js-motion .is-in { animation-play-state: running; }
+
+
+/* ==========================================================================
+   5. THE COLLAGE — scroll-linked parallax, plus idle float
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+
+  /* THE TIMELINE IS THE BAND'S, NOT EACH ITEM'S, and that is the whole
+     trick. A plain `view()` gives every element its own timeline keyed to
+     its own height and position, so two pieces of art at the same --depth
+     progress at different rates: measured, the frond and the paint smear —
+     both --depth-far, and touching in the comp — drifted 52px apart, which
+     is exactly the gap between them that had to be designed out in the
+     first place.
+
+     A named `view-timeline` on the band gives every layer inside it one
+     shared progress value, so relative movement within a band comes only
+     from the --depth ratio. Same depth now means genuinely locked together;
+     different depth means separated by a fixed proportion. The collage can
+     no longer come apart at a scroll position nobody tested.
+
+     The cost is that a tall band spreads the same travel over more scroll,
+     which is why --drift-max is set as high as it is — see tokens.css.
+
+     Scale: the first pass used 20px of total travel, which across a 3300px
+     page is not perceptible. It passed every test and looked like nothing.
+
+     .deco is aria-hidden and pointer-events:none, so none of this moves
+     anything a reader can touch, select or hear.                          */
+  .band {
+    view-timeline-name: --band;
+  }
+
+  .deco__item,
+  .events__photo {
+    animation: drift 1ms linear both,
+               float var(--period, var(--dur-float)) var(--ease-float) infinite alternate;
+    animation-delay: 0s, var(--phase, -2s);
+    animation-timeline: --band, auto;
+    animation-composition: replace, add;
+  }
+}
+
+/* Firefox: no scroll timeline, so no parallax — but the idle float needs no
+   timeline at all, so the collage still breathes. This is deliberately NOT
+   scoped to .js-motion: it hides nothing, so it cannot strand anything if
+   the script never runs. */
+@supports not (animation-timeline: view()) {
+  .deco__item,
+  .events__photo {
+    animation: float var(--period, var(--dur-float)) var(--ease-float) infinite alternate;
+    animation-delay: var(--phase, -2s);
+  }
+}
+
+
+/* ==========================================================================
+   6. REDUCED MOTION
+   ==========================================================================
+   style.css already collapses animation-duration for everyone. That is not
+   enough here, for two separate reasons worth knowing:
+
+     - A scroll-driven animation ignores animation-duration entirely. Its
+       progress comes from scroll position, so setting the duration to
+       0.01ms does nothing to it at all.
+     - The idle float is infinite. Collapsing its duration makes it finish
+       instantly but it is still an animation that never ends, and the
+       blanket rule's `animation-iteration-count: 1` leaves it parked at
+       whatever offset it happened to reach.
+
+   Turning these off means removing the timeline and the animation itself.
+   Because nothing is hidden outside a keyframe, that alone restores every
+   element to its natural, visible, unmasked state. js/motion.js also exits
+   before setting .js-motion, so the reveal rules never match either.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .wordmark,
+  .section-heading,
+  .bio,
+  .work__list > li,
+  .events__item,
+  .events__empty,
+  .events__past,
+  .contact,
+  .colophon,
+  .purchase,
+  .deco__item,
+  .events__photo {
+    animation: none !important;
+    animation-timeline: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
+  }
+
+  .wordmark,
+  .bio,
+  .contact {
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+  }
+}
