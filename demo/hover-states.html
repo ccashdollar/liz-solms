@@ -329,6 +329,100 @@ body {
 }
 
 
+/* ---------- 7. TRAVELLING DOTTED RULE ----------
+   Same idea as the squiggle, minus its one real wart. A repeating
+   background shifted by exactly one period on a loop; matching the
+   shift to `background-size` is what makes the cycle invisible.
+
+   WHY THIS IS THE BETTER ENGINEERING. The squiggle needs an SVG,
+   which means a data URI, and a data URI cannot see `currentColor` —
+   so the stroke colour is baked in and every state carries its own
+   570-byte copy. `radial-gradient` is a native CSS image and DOES
+   take `currentColor`. No SVG, no data URI, no encoding traps, no
+   second copy: the rule inherits the link colour, and the whole
+   effect is six lines your dev can read at a glance.
+
+   EVERYTHING IS IN em, so the rule scales with the type it sits
+   under. At the 27px prose size the pitch lands at ~5.9px with a
+   ~2.2px dot; at the 19px phone size it tightens to ~4.2px and
+   ~1.5px, which is what a hairline rule should do rather than
+   sitting at a fixed weight while the type shrinks around it.
+
+   THE PITCH IS A TOKEN because the keyframe MUST travel exactly one
+   period or the loop visibly stutters at the seam. One variable, used
+   twice, so the two can never drift apart. This is the whole trick
+   and it is the only thing to be careful about.
+
+   SPEED. 700ms per period, about 8px/s. Slower than it sounds like it
+   needs to be, deliberately: a regular pattern travelling too fast
+   strobes — the eye reads it as juddering or briefly running
+   backwards, the wagon-wheel effect. At this rate it reads as a
+   current.
+
+   Everything else is carried over from 6: paused at rest rather than
+   declared inside :hover (so leaving freezes the dots where they are
+   instead of snapping to phase zero), box-decoration-break so a
+   wrapped link gets a complete rule on each line, hover gated on a
+   real pointer, and reduced motion keeps the rule and drops the
+   travel.
+
+   ONE CONVENTION TO KNOW: browsers render <abbr title> with a dotted
+   underline, so a dotted rule can read as "definition" rather than
+   "link". There are no <abbr> elements on this page, and magenta plus
+   motion settles it — but do not introduce one later. */
+.hv--dotted {
+  --dot-pitch: 0.22em;
+  text-decoration: none;
+  background-image: radial-gradient(circle, currentColor 0.04em, transparent 0.062em);
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: var(--dot-pitch) var(--dot-pitch);
+  padding-bottom: 0.28em;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  animation: dots-travel 700ms linear infinite;
+  animation-play-state: paused;
+  transition: color 220ms linear;
+}
+@keyframes dots-travel {
+  from { background-position: 0 100%; }
+  to   { background-position: var(--dot-pitch) 100%; }
+}
+@media (hover: hover) {
+  .hv--dotted:hover { color: var(--c-link-hover); animation-play-state: running; }
+}
+
+/* The dashed sibling. Identical mechanism, one gradient swapped — a
+   hard-edged linear-gradient instead of a soft radial one. Reads
+   closer to a perforation or a cut line than to a dotted rule, which
+   on a page made of cut paper is not nothing. */
+.hv--dashed {
+  --dash-pitch: 0.34em;
+  text-decoration: none;
+  background-image: linear-gradient(90deg, currentColor 0.17em, transparent 0.17em);
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: var(--dash-pitch) 0.065em;
+  padding-bottom: 0.30em;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  animation: dashes-travel 760ms linear infinite;
+  animation-play-state: paused;
+  transition: color 220ms linear;
+}
+@keyframes dashes-travel {
+  from { background-position: 0 100%; }
+  to   { background-position: var(--dash-pitch) 100%; }
+}
+@media (hover: hover) {
+  .hv--dashed:hover { color: var(--c-link-hover); animation-play-state: running; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hv--dotted, .hv--dashed { animation: none; }
+}
+
+
 /* ============================================================
    REDUCED MOTION — the state still changes, the travel does not.
    A hover that vanishes entirely is worse than one that snaps.
@@ -343,7 +437,7 @@ body {
 
   <div class="lede">
     <h1>Hover states</h1>
-    <p>Seven directions on the real type, at the real sizes, in the real colours.
+    <p>Nine directions on the real type, at the real sizes, in the real colours.
        Hover each one. Tab through them too — the focus ring is the same on all six.</p>
     <p>Each is a single class with no per-link markup, so any of them can be
        dropped onto <code>a</code> and survive CMS text of any length.</p>
@@ -555,6 +649,61 @@ body {
       <p class="prose-spec">To reach Liz and/or subscribe to her zine
         <a class="hv hv--squiggle" href="#">Ongoing</a> you can
         <a class="hv hv--squiggle" href="#">email her here, or write to her at the address below</a>.</p>
+    </div>
+  </section>
+
+<!-- ===================================================== 7 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">7a</span>
+      <span class="card__name">Travelling dotted rule</span>
+      <span class="tag tag--good">works in prose</span>
+      <span class="tag tag--good">no SVG</span>
+    </div>
+    <p class="card__why">The squiggle's mechanism without its one real wart. A data-URI SVG
+      can't see <b>currentColor</b>, so the squiggle bakes its colour in and carries a copy per
+      state; <b>radial-gradient</b> is native CSS and inherits the link colour for free. No SVG,
+      no encoding traps, six lines your dev can read at a glance. Pitch and dot size are in
+      <b>em</b>, so the rule scales with the type — ~5.9px pitch under the 27px prose, ~4.2px
+      under the 19px phone size.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--dotted" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--dotted" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose — including one that wraps across a line break</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--dotted" href="#">Ongoing</a> you can
+        <a class="hv hv--dotted" href="#">email her here, or write to her at the address below</a>.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">7b</span>
+      <span class="card__name">Travelling dashed rule</span>
+      <span class="tag">the same, one gradient swapped</span>
+    </div>
+    <p class="card__why">Identical mechanism with a hard-edged linear gradient instead of a soft
+      radial one. Reads closer to a perforation or a cut line than to a dotted rule — which on a
+      page made of cut paper is not nothing.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--dashed" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--dashed" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--dashed" href="#">Ongoing</a> you can
+        <a class="hv hv--dashed" href="#">email her here</a>.</p>
     </div>
   </section>
 
