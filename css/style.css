@@ -167,7 +167,16 @@ body {
   line-height: var(--leading-contact);
 }
 .contact.prose p + p { margin-top: 0; }
-.contact .section-heading { margin-bottom: 0; }
+
+/* The heading keeps the standard .section-heading margin, so CONTACT sits
+   the same distance from its copy as SELECTED PUBLISHED WORK and EVENTS do
+   — measured, 24-29px of ink-to-ink gap across all three.
+
+   This is a deliberate departure from the comp, which runs the whole
+   contact block on one unbroken 45px rhythm with the heading tight to the
+   first line. Consistency between the three section headings won over comp
+   fidelity here. The paragraph gaps inside the block stay at zero, which is
+   the part of the comp's density that still reads. */
 cite { font-style: italic; }
 
 /* ---------- LINKS ---------- */
