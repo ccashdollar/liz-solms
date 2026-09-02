@@ -253,6 +253,82 @@ body {
   .hv--painted:hover::after { opacity: 1; scale: 1; rotate: 0.8deg; }
 }
 
+/* ---------- 6. TRAVELLING SQUIGGLE ----------
+   The technique is the standard one and it is the right one: a
+   seamlessly-tiling SVG wave as a repeating background, shifted by
+   exactly one wavelength on a loop so it appears to travel forever.
+   Native `text-decoration: wavy` cannot be animated at all, and gives
+   no control over amplitude or wavelength, so it is not a route to
+   this. Six things had to change from the stock recipe.
+
+   1. HEADROOM IN THE viewBox. The usual snippet draws into
+      `viewBox='0 0 20 4'` with a path whose second half dips to
+      y~5.25 and a 2-unit stroke on top of that. Everything below y=4
+      is clipped, so the troughs come out sliced flat and the result
+      reads as a row of disconnected humps, not a squiggle. Rendered
+      side by side the difference is not subtle. This viewBox is 8
+      units tall for ink that spans 1.03-6.53.
+
+   2. NO SNAP ON HOVER-OUT. Declaring the animation only inside
+      :hover removes it the instant the cursor leaves, and the wave
+      jumps back to phase zero from wherever it had got to. Declared
+      always and held at `animation-play-state: paused` instead, so
+      leaving freezes it exactly where it is — the same paused/running
+      mechanism the text reveals use in motion.css.
+
+   3. box-decoration-break: clone, or a link wrapping onto a second
+      line gets one background stretched across the whole inline box
+      and line two starts mid-wave.
+
+   4. It travels WITH the reading direction (0 -> +26px). The stock
+      version shifts negative, which reads as rewinding. One
+      character.
+
+   5. Half the speed. One wavelength per 1.1s rather than per 0.4s;
+      at 0.4s a 26px wave reads as a vibration.
+
+   6. An uneven path, not a pure sine. Same summed-harmonic trick as
+      any wave, but with second and third harmonics at odd phases so
+      the crests differ in height. It still tiles perfectly — every
+      harmonic is periodic over the tile — while reading as something
+      a hand drew. A mathematically clean sine reads as an effect.
+
+   COST OF THE BACKGROUND APPROACH: a data-URI SVG cannot see
+   `currentColor`, so the stroke colour is baked in and the two states
+   need two copies. A mask on a pseudo-element would inherit the
+   colour for free but cannot repeat per line box, and wrapping
+   matters more here than saving 570 bytes. */
+.hv--squiggle {
+  text-decoration: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 8%27 preserveAspectRatio=%27none%27%3E%3Cpath fill=%27none%27 stroke=%27%23C100C1%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 d=%27M0,4.58C0.72,4.89 1.44,5.06 2.17,5.14C2.89,5.22 3.61,5.05 4.33,5.06C5.06,5.08 5.78,5.13 6.50,5.22C7.22,5.32 7.94,5.60 8.67,5.63C9.39,5.66 10.11,5.62 10.83,5.39C11.56,5.17 12.28,4.66 13.00,4.27C13.72,3.87 14.44,3.37 15.17,3.03C15.89,2.70 16.61,2.44 17.33,2.26C18.06,2.08 18.78,1.94 19.50,1.93C20.22,1.92 20.94,1.97 21.67,2.20C22.39,2.42 23.11,2.89 23.83,3.29C24.56,3.68 25.28,4.27 26.00,4.58%27/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: 26px 8px;
+  padding-bottom: 0.30em;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  animation: squiggle-travel 1100ms linear infinite;
+  animation-play-state: paused;
+  transition: color 220ms linear;
+}
+@keyframes squiggle-travel {
+  from { background-position:    0 100%; }
+  to   { background-position: 26px 100%; }
+}
+@media (hover: hover) {
+  .hv--squiggle:hover {
+    color: var(--c-link-hover);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 8%27 preserveAspectRatio=%27none%27%3E%3Cpath fill=%27none%27 stroke=%27%238F008F%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 d=%27M0,4.58C0.72,4.89 1.44,5.06 2.17,5.14C2.89,5.22 3.61,5.05 4.33,5.06C5.06,5.08 5.78,5.13 6.50,5.22C7.22,5.32 7.94,5.60 8.67,5.63C9.39,5.66 10.11,5.62 10.83,5.39C11.56,5.17 12.28,4.66 13.00,4.27C13.72,3.87 14.44,3.37 15.17,3.03C15.89,2.70 16.61,2.44 17.33,2.26C18.06,2.08 18.78,1.94 19.50,1.93C20.22,1.92 20.94,1.97 21.67,2.20C22.39,2.42 23.11,2.89 23.83,3.29C24.56,3.68 25.28,4.27 26.00,4.58%27/%3E%3C/svg%3E");
+    animation-play-state: running;
+  }
+}
+/* The wave stays, the travel stops. A hover that vanishes under
+   reduced motion is worse than one that simply holds still. */
+@media (prefers-reduced-motion: reduce) {
+  .hv--squiggle { animation: none; }
+}
+
+
 /* ============================================================
    REDUCED MOTION — the state still changes, the travel does not.
    A hover that vanishes entirely is worse than one that snaps.
@@ -267,7 +343,7 @@ body {
 
   <div class="lede">
     <h1>Hover states</h1>
-    <p>Six directions on the real type, at the real sizes, in the real colours.
+    <p>Seven directions on the real type, at the real sizes, in the real colours.
        Hover each one. Tab through them too — the focus ring is the same on all six.</p>
     <p>Each is a single class with no per-link markup, so any of them can be
        dropped onto <code>a</code> and survive CMS text of any length.</p>
@@ -449,6 +525,36 @@ body {
       <p class="prose-spec">To reach Liz and/or subscribe to her zine
         <a class="hv hv--painted" data-word="Ongoing" href="#">Ongoing</a> you can
         <a class="hv hv--brush" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+<!-- ===================================================== 6 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">6</span>
+      <span class="card__name">Travelling squiggle</span>
+      <span class="tag tag--good">works in prose</span>
+    </div>
+    <p class="card__why">A seamlessly-tiling SVG wave shifted by exactly one wavelength on a
+      loop, so it travels forever. At rest it is the underline — still a non-colour signal.
+      On hover it starts moving and the colour deepens. The path is <b>uneven on purpose</b>:
+      second and third harmonics at odd phases give crests of differing height, so it still
+      tiles perfectly but reads as drawn rather than computed. Six corrections to the stock
+      recipe are documented in the CSS, the largest being that the usual
+      <b>viewBox='0 0 20 4'</b> clips its own troughs flat.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--squiggle" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--squiggle" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose — including one that wraps across a line break</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--squiggle" href="#">Ongoing</a> you can
+        <a class="hv hv--squiggle" href="#">email her here, or write to her at the address below</a>.</p>
     </div>
   </section>
 
