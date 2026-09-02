@@ -183,10 +183,61 @@ cite { font-style: italic; }
 a { color: var(--c-link); }
 a:hover { color: var(--c-link-hover); }
 
-/* Underline offset keeps descenders legible in a serif face. */
+/* THE UNDERLINE IS A BACKGROUND, NOT A text-decoration, so that it can
+   move. A repeating hard-edged linear-gradient, shifted by exactly one
+   pitch on a loop; matching the travel to `background-size` is what
+   makes the cycle seamless.
+
+   Why a gradient rather than an SVG: a data-URI SVG cannot see
+   `currentColor`, so its colour would be baked in and every state
+   would need its own copy. A CSS gradient inherits the link colour for
+   free, which means this rule is correct in magenta at rest, in the
+   deeper magenta on hover, and anywhere else a link colour is set
+   later, with no extra CSS.
+
+   IT IS PARKED, NOT ABSENT. The animation is declared always and held
+   at `animation-play-state: paused`, rather than being declared inside
+   :hover. Declaring it in :hover removes it the instant the cursor
+   leaves and the dashes snap back to phase zero; paused means leaving
+   freezes them exactly where they are. Same mechanism the text reveals
+   use in motion.css.
+
+   box-decoration-break: clone, or a link wrapping onto a second line
+   gets ONE background stretched across the whole inline box and the
+   second line starts mid-dash.
+
+   Padding on an inline element does not affect line height, so none of
+   this moves any text. It does enlarge the hit area slightly, which is
+   a small win on touch.
+
+   One convention worth knowing: browsers draw <abbr title> with a
+   dotted underline, so a dashed rule sits near "definition" in a
+   reader's vocabulary. There is no <abbr> on this page, and the
+   magenta settles it — but do not introduce one. */
 a:not(.purchase):not(.skip-link) {
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
+  text-decoration: none;
+  background-image: linear-gradient(90deg,
+                      currentColor var(--rule-dash),
+                      transparent  var(--rule-dash));
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: var(--rule-pitch) var(--rule-weight);
+  padding-bottom: var(--rule-drop);
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  animation: rule-travel var(--dur-rule) linear infinite;
+  animation-play-state: paused;
+}
+
+@keyframes rule-travel {
+  from { background-position: 0 100%; }
+  to   { background-position: var(--rule-pitch) 100%; }
+}
+
+/* Gated on a real pointer: on touch, :hover can stick after a tap and
+   leave the rule running with nothing hovering it. */
+@media (hover: hover) {
+  a:not(.purchase):not(.skip-link):hover { animation-play-state: running; }
 }
 
 /* A visible focus ring on every interactive element — keyboard users
@@ -277,11 +328,38 @@ a:focus-visible {
 /* ---------- EVENTS ---------- */
 /* Date, then what it is, then where. Stacked rather than in date/detail
    columns: at 22px in a 26rem column, two columns leave neither enough
-   room. */
+   room.
+
+   A BLOCK STACK, NOT A GRID, and the reason is the link inside it.
+   Grid blockifies its direct children: `a.events__name` computes to
+   `display: block` and stretches to the full column, so its dashed
+   background rule ran the whole width of the column rather than
+   hugging the title. `display: inline` cannot fix that — blockification
+   overrides it — and `justify-self: start` only shrinks the box, which
+   still leaves a wrapped two-line title with a full-width rule under
+   its short last line.
+
+   Three stacked rows want no grid anyway. The date and venue become
+   blocks and the link stays a real inline box, so the rule breaks
+   correctly per line.
+
+   THE GAPS GO ON THE DATE AND THE VENUE, not on the name, because
+   vertical margins on an INLINE element do nothing at all. Putting
+   0.1em above the name looked right in the source and silently
+   removed 6px per event — eight items, 48px of the page. The two
+   blocks either side carry it instead. 0.12em against their smaller
+   font-size reproduces the grid's 0.1em gap against the item's, to
+   within half a pixel. */
 .events__item {
-  display: grid;
-  gap: 0.1em;
   margin-bottom: var(--space-m);
+}
+.events__date {
+  display: block;
+  margin-bottom: 0.12em;
+}
+.events__venue {
+  display: block;
+  margin-top: 0.12em;
 }
 
 .events__date {
@@ -294,8 +372,8 @@ a:focus-visible {
 .events__name { font-size: var(--step-0); }
 
 a.events__name {
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.16em;
+  /* The rule comes from the global link rule and scales with this
+     element's own font-size, so nothing is set here. */
   /* A long event title in a 26rem column will otherwise punch out of it. */
   overflow-wrap: break-word;
 }
@@ -354,4 +432,14 @@ a.events__name {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* The blanket rule above is not enough for the link rule. Collapsing
+     the duration of an infinite animation still leaves an animation
+     that never ends, and `animation-iteration-count: 1` parks it at
+     whatever phase it happened to reach — which for a dashed rule
+     means the dashes land at a random offset instead of at zero.
+     Remove it outright: the rule stays, the travel stops, which is
+     what the setting is asking for. A hover that vanishes under
+     reduced motion is worse than one that simply holds still. */
+  a:not(.purchase):not(.skip-link) { animation: none !important; }
 }

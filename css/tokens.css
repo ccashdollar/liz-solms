@@ -223,6 +223,33 @@
 
   --dur-paint: 2400ms;   /* the wordmark being brushed on at load   */
 
+  /* ---------- LINK RULE ----------
+     The underline is a dashed rule drawn as a repeating background
+     rather than a text-decoration, so it can travel on hover.
+
+     ALL FOUR VALUES ARE IN em, so the rule scales with whatever type
+     it sits under — the same rule serves 33px contact copy and 17px
+     list items without a breakpoint.
+
+     --rule-pitch IS THE CRITICAL ONE. The keyframe in style.css
+     travels exactly this distance, so the loop closes on itself
+     invisibly. If the two ever disagree the dashes visibly jump once
+     per cycle. One token, used twice, so they cannot drift.
+
+     --rule-drop is the gap below the text. Measured against EB
+     Garamond's real descenders at 27px: 0.14em leaves 3px of daylight
+     under the tail of a g, which reads as attached to the word. 0.30em
+     was the first pass and floated. Below 0.12em it grazes.
+
+     --dur-rule: about 8px/s. Deliberately slower than it seems it
+     needs to be — a regular pattern travelling fast strobes, and the
+     eye reads it as juddering or briefly running backwards. */
+  --rule-pitch:  0.34em;   /* one dash + one gap                     */
+  --rule-dash:   0.17em;   /* ink within that pitch — half, so 1:1   */
+  --rule-weight: 0.065em;  /* rule thickness                         */
+  --rule-drop:   0.14em;   /* gap below the deepest descender        */
+  --dur-rule:    760ms;    /* one pitch travelled                    */
+
   /* Scroll parallax — the amplitude for a piece at --depth-y 1, in a band
      whose pass length is about twice the viewport. Per-band scales in
      layout.css divide out the rest.
