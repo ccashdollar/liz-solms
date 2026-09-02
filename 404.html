@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found &mdash; Liz Solms</title>
+
+  <!-- ============================================================
+       A 404 is served for ANY missing path, including deep ones like
+       /readings/2027/spring. A browser resolves relative URLs against
+       the REQUESTED path, not against wherever this file lives, so
+       `css/style.css` would be looked for at /readings/2027/css/... and
+       the page would arrive unstyled.
+
+       <base> fixes it in one place. If the site is ever served from a
+       subdirectory rather than a domain root, change this ONE attribute
+       — e.g. href="/liz-solms/" — and every path below follows.
+       ============================================================ -->
+  <base href="/">
+
+  <!-- A 404 must not be indexed. The status code alone should handle it;
+       this is the belt to that pair of braces. -->
+  <meta name="robots" content="noindex, follow">
+
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#F2F1E7">
+
+  <link rel="preload" href="assets/fonts/black-paint-web.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/eb-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- tokens + type + the wordmark's paint-in. NOT layout.css: that file
+       positions the collage inside the three content bands of the main
+       page, and this page has none of them. The two decorative pieces
+       here are placed by the small block below instead. -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/motion.css">
+
+  <style>
+    /* motion.css holds the collage parallax under
+       `@supports (animation-timeline: view())`, keyed to `.deco__item`
+       inside a `.band`. This page has no bands, so the art here uses
+       different class names and those rules never match it. What we DO
+       want from motion.css is the wordmark's paint-in, which is
+       time-based and unconditional. */
+
+    html, body { overflow-x: clip; }
+
+    /* The height of the band the pink strip lives in, at the foot of the
+       page. It is a token because TWO things depend on it and they must
+       agree: the strip is clipped to it, and the content is padded clear
+       of it. That is what makes the overlap impossible rather than
+       unlikely — see the note on .art__band. */
+    :root { --strip-band: clamp(5rem, 16vh, 10rem); }
+
+    .page {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      align-content: center;
+      padding: clamp(2.5rem, 12vh, 8rem)
+               var(--gutter, clamp(1.25rem, 5vw, 5rem))
+               calc(var(--strip-band) + clamp(1rem, 3vh, 2.5rem));
+      max-width: 78rem;
+      margin-inline: auto;
+    }
+
+    .lost { max-width: 34rem; }
+
+    /* The wordmark is the link home. It keeps its painted face, so the
+       global dashed link rule and the link colour are both switched off
+       here — a travelling dashed underline beneath a brush-drawn name
+       reads as two different hands. */
+    .wordmark a:any-link {
+      color: inherit;
+      background-image: none;
+      padding-bottom: 0;
+      animation: none;
+      text-decoration: none;
+    }
+    .wordmark a:any-link:hover { color: var(--c-link); }
+
+    /* ============================================================
+         THE LINE.
+
+         It nods at the title of her book without explaining itself:
+         a reader who knows Small Hot Rooms gets the joke, and one who
+         doesn't just reads a good sentence. That is the right ratio
+         for a writer's site — wit that costs nothing if you miss it.
+
+         Alternates, if Liz prefers a different register:
+           "This page is out of print."
+           "That page is somewhere else. So, often, is Liz."
+           "You've found a room with nothing in it."
+           "Nothing here. The rest of the house is fine."
+       ============================================================ */
+    .lost__line {
+      font-size: var(--step-3);
+      line-height: var(--leading-heading);
+      margin-block: clamp(1.5rem, 4vw, 2.75rem) 0;
+      text-wrap: balance;
+    }
+
+    .lost__body {
+      font-size: var(--step-1);
+      line-height: var(--leading-body);
+      margin-top: clamp(0.75rem, 2vw, 1.25rem);
+      text-wrap: pretty;
+    }
+
+    .lost__back { margin-top: clamp(1.5rem, 4vw, 2.5rem); font-size: var(--step-1); }
+
+    /* --- decoration ---------------------------------------------------
+       Two pieces, not thirteen. A 404 wants to look like the same world
+       without restaging the whole collage: the smear that opens the real
+       page, and the pink strip that closes it. */
+    .art {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: clip;
+      z-index: -1;
+    }
+    .art img { position: absolute; display: block; }
+
+    /* Bleeds off the top-right corner and touches y=0, exactly as on the
+       home page. Any daylight above it reads as a mistake. */
+    .art__smear {
+      top: 0;
+      right: calc(12% - clamp(0rem, 6vw, 7rem));
+      width: clamp(18rem, 53vw, 46rem);
+    }
+
+    /* THE STRIP IS CLIPPED TO A BAND, and the band is the same token the
+       content is padded clear of. Two separate reasons:
+
+       1. CONTRAST, measured not assumed. Free-floating, the strip's box
+          scaled with the viewport width, so on a wide screen its ink
+          drifted up behind the "Back to the site" link. Magenta #C100C1
+          on that pale pink measures 3.26:1 — a real WCAG failure, and
+          one that only appeared at 1366 and above. Confining the ink to
+          a band the text can never reach makes it structurally
+          impossible rather than merely unlikely at the widths anyone
+          happened to check.
+
+       2. It bleeds off BOTH edges. The first pass ran off the left only
+          and stopped at 62% of the width, leaving a cut end hanging in
+          open space. Every other piece of art on this site either
+          bleeds off the frame or is a complete shape; a strip that just
+          stops reads as a crop that went wrong. */
+    .art__band {
+      position: absolute;
+      left: -12vw;
+      right: -12vw;
+      bottom: 0;
+      height: var(--strip-band);
+      overflow: clip;
+    }
+    .art__strip {
+      left: 0;
+      bottom: -12%;
+      width: 100%;
+      max-width: none;
+      opacity: 0.9;
+    }
+
+    /* Narrow screens: the same band, but the strip runs wider so its
+       diagonal still crosses the full width rather than sitting flat. */
+    @media (max-width: 700px) {
+      .art__band { left: -22vw; right: -22vw; }
+      /* On a phone the smear bleeds off the right edge as it does on the
+         home page, rather than sitting inset with a sliver of ground
+         beside it — a collage piece that stops short of the frame reads
+         as a floating sticker. */
+      .art__smear { right: -7vw; width: 94vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="art" aria-hidden="true">
+    <img class="art__smear" src="assets/images/paint-smear-900w.webp"
+         srcset="assets/images/paint-smear-520w.webp 520w,
+                 assets/images/paint-smear-900w.webp 900w,
+                 assets/images/paint-smear.webp 1659w"
+         sizes="(min-width: 900px) 53vw, 100vw"
+         alt="" width="1659" height="578" fetchpriority="high">
+    <div class="art__band">
+      <img class="art__strip" src="assets/images/strip-pink-horz.webp"
+           alt="" width="1378" height="370" loading="lazy">
+    </div>
+  </div>
+
+  <main class="page">
+    <div class="lost">
+      <h1 class="wordmark"><a href="/">Liz Solms</a></h1>
+
+      <p class="lost__line">A small empty room.</p>
+
+      <p class="lost__body">
+        This page doesn&rsquo;t exist &mdash; or doesn&rsquo;t exist yet.
+        Everything Liz has actually written is one link away.
+      </p>
+
+      <p class="lost__back"><a href="/">Back to the site</a></p>
+    </div>
+  </main>
+
+</body>
+</html>

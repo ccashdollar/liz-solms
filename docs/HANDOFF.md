@@ -94,9 +94,25 @@ different origin, they need CORS — same-origin as now, they do not.
 to it. The `<link rel="canonical">` must agree with whichever you pick, or
 you will split ranking signals between two URLs.
 
-**404 rule.** Point it at a 404 page (not yet built — say the word and it can
-be, in the site's own type and collage rather than a server default). Return
-a real `404` status, not a `200`.
+**404 rule.** `404.html` is built. Point the server's not-found handler at
+it and make sure it returns a real **`404` status**, not a `200` — a "soft
+404" that answers 200 gets the missing URL indexed as a real page.
+
+Two things about that file specifically:
+
+- **It has a `<base href="/">`, and that is load-bearing.** A 404 is served
+  for *any* missing path, including deep ones like `/readings/2027/spring`.
+  A browser resolves relative URLs against the *requested* path, so without
+  the base tag its CSS would be looked for at `/readings/2027/css/…` and the
+  page would arrive unstyled. If the site is ever served from a
+  subdirectory, change that **one attribute** (e.g. `href="/liz-solms/"`)
+  and every path in the file follows. This is also why the 404 looks
+  unstyled on a GitHub Pages *project* URL — that is the base tag doing
+  exactly what it should, not a bug.
+- It loads `tokens.css`, `style.css` and `motion.css` but **not**
+  `layout.css`, which positions the collage inside the main page's three
+  content bands. The two decorative pieces here are placed by a small
+  `<style>` block in the file.
 
 **`robots.txt` and `sitemap.xml`** must be served from the origin root.
 
@@ -289,7 +305,7 @@ omission, with a commented block to reverse it — her call, not a default),
 whether to run analytics, whether her email stays in plain HTML, a proofread
 of her own bio, the `sameAs` URLs, and the book's ISBN.
 
-**Still unbuilt:** the 404 page.
+**Still unbuilt:** nothing.
 
 Design questions go to Chris. Anything about why something is the way it is
 is probably answered in a comment at that line — the CSS explains its own
