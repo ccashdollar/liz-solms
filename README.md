@@ -3,6 +3,11 @@
 Static front-end for handoff to a development partner (CMS TBD).
 Design source: `../Archive/Liz Solms Page.pdf` (artboard 1366 × 3325).
 
+**Implementing this?** Start with [`docs/HANDOFF.md`](docs/HANDOFF.md): what
+to swap, what the server has to do, what the CMS must render, and what to
+check after deploy. This README explains how the page is built; that one
+explains what is left to do.
+
 ## Structure
 
 ```
