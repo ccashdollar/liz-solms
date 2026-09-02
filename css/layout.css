@@ -472,8 +472,22 @@ html, body { overflow-x: clip; }
     z-index: var(--z-photo-back);
   }
 
-  /* Keeps the bullets clear of the photo. */
-  .events__list { max-width: 26rem; }
+  /* Keeps the entries clear of the diving photo.
+
+     A flat 26rem cap is not enough, and the reason is that the two edges
+     move independently: the list's cap is a fixed length, while the photo's
+     left edge tracks the viewport (it is 48vw wide, pinned 3.75rem from the
+     right). They converge as the window narrows toward the breakpoint.
+     Measured with a long event title, they collide from about 1100px down
+     and overlap by ~90px at 900 — invisible with the current placeholder
+     titles, and guaranteed to appear the moment the CMS gets a real one.
+
+     `52vw - 12.5rem` is the width actually left over beside the photo, so the
+     cap is whichever is smaller. The 26rem ceiling still governs everywhere
+     above ~1150px, where there is room to spare. */
+  .events__list,
+  .events__empty,
+  .events__past { max-width: min(26rem, 52vw - 12.5rem); }
 }
 
 /* --- middle decoration --- */
