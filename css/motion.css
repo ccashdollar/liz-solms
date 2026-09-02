@@ -8,7 +8,8 @@
      SCROLL-LINKED — the collage parallax. Progress IS the scroll position.
      Pure CSS scroll-driven animation, no JavaScript, runs on the
      compositor. Chrome/Edge 115+, Safari 26+; Firefox has not shipped it,
-     so Firefox gets the idle float without the parallax.
+     so in Firefox the collage simply sits still. It hides nothing, so
+     there is nothing to fall back to.
 
      SCROLL-TRIGGERED — every text reveal. The element comes into view, and
      then a short animation plays on its own clock. Driven by
@@ -123,17 +124,6 @@
   to   { translate: 0 calc(var(--drift) * -1); }
 }
 
-/* --- Collage float: idle, continuous ------------------------------------ *
-   Runs on its own clock and composes ON TOP of the parallax via
-   `animation-composition: add` — two animations writing to the same
-   `translate` property, summed rather than one overriding the other.
-   Without that keyword the float simply wins and the parallax vanishes with
-   no error anywhere.                                                      */
-@keyframes float {
-  from { translate: 0 var(--float); }
-  to   { translate: 0 calc(var(--float) * -1); }
-}
-
 
 /* ==========================================================================
    2. STATIC SETUP FOR THE MASKS
@@ -222,14 +212,16 @@
 
 
 /* ==========================================================================
-   3. THE COLLAGE LAYERS — distances and phases
+   3. THE COLLAGE LAYERS — how far each one travels
    ==========================================================================
-   Set outside the path blocks so the two paths cannot drift apart.
-
-   Float is scaled by depth but never to zero: `0.4 + depth * 0.6` means the
-   flattest art still breathes at 40% of the maximum while the farthest
-   moves at 100%. Art pinned to the text should move least, not freeze —
-   one motionless layer in a floating collage reads as a mistake.
+   THERE IS NO IDLE MOTION, and that is a decision rather than an omission.
+   An earlier pass ran a slow continuous bob on top of the parallax, on the
+   theory that a collage which never moves reads as a flat image. In
+   practice it does the opposite: movement the reader did not cause reads as
+   the page being restless, and it competes with the one piece of motion
+   that is actually saying something — layers sliding past each other
+   because the reader is scrolling. Every layer is at rest until the page
+   moves, and its position is a pure function of scroll.
    ========================================================================== */
 
 .deco__item,
@@ -251,7 +243,6 @@
      and it defaults to --depth so a new piece still behaves sensibly if
      nobody sets one. */
   --drift: calc(var(--depth-y, var(--depth, 0)) * var(--drift-max) * var(--drift-scale, 1));
-  --float: calc((0.4 + var(--depth-y, var(--depth, 0)) * 0.6) * var(--float-max));
 }
 
 /* .events__photo is a content image and never got a --depth from the deco
@@ -265,23 +256,6 @@
    the >=900 block only, and below 900 the photo quietly fell back to full
    depth and swung 242px against the panel. */
 .events__photo { --depth: var(--depth-far); --depth-y: 0; }
-
-/* Period and phase, varied per layer. Awkward multipliers so the cycles
-   take a long time to line up again; negative phases start each layer
-   part-way through its arc, so nothing sits waiting at the top when the
-   page loads. Unison is what makes this kind of effect read as a throb
-   rather than as things hanging in air.
-
-   Both are custom properties rather than literal `animation-delay` values
-   because the two paths declare different numbers of animations — one runs
-   drift AND float, the other float alone — so a literal
-   `animation-delay: 0s, -4.7s` would land on the wrong animation. */
-.deco__item:nth-of-type(1) { --period: calc(var(--dur-float) * 1.00); --phase: -1.2s; }
-.deco__item:nth-of-type(2) { --period: calc(var(--dur-float) * 1.37); --phase: -4.7s; }
-.deco__item:nth-of-type(3) { --period: calc(var(--dur-float) * 0.79); --phase: -2.9s; }
-.deco__item:nth-of-type(4) { --period: calc(var(--dur-float) * 1.19); --phase: -6.1s; }
-.deco__item:nth-of-type(5) { --period: calc(var(--dur-float) * 0.91); --phase: -0.4s; }
-.events__photo             { --period: calc(var(--dur-float) * 1.11); --phase: -3.3s; }
 
 
 /* ==========================================================================
@@ -391,7 +365,7 @@
 
 
 /* ==========================================================================
-   5. THE COLLAGE — scroll-linked parallax, plus idle float
+   5. THE COLLAGE — scroll-linked parallax
    ========================================================================== */
 
 @supports (animation-timeline: view()) {
@@ -422,25 +396,18 @@
     view-timeline-name: --band;
   }
 
-  .deco__item,
-  .events__photo {
-    animation: drift 1ms linear both,
-               float var(--period, var(--dur-float)) var(--ease-float) infinite alternate;
-    animation-delay: 0s, var(--phase, -2s);
-    animation-timeline: --band, auto;
-    animation-composition: replace, add;
-  }
-}
+  /* One animation, one property, one input. The 1ms duration is a
+     formality — a scroll-driven animation takes its progress from the
+     timeline and ignores duration entirely — but it has to be a positive
+     number for the shorthand to parse at all.
 
-/* Firefox: no scroll timeline, so no parallax — but the idle float needs no
-   timeline at all, so the collage still breathes. This is deliberately NOT
-   scoped to .js-motion: it hides nothing, so it cannot strand anything if
-   the script never runs. */
-@supports not (animation-timeline: view()) {
+     This was two animations summed with `animation-composition: add`. With
+     the idle float gone only one thing writes to `translate`, so the
+     composition keyword and the per-layer delays go with it. */
   .deco__item,
   .events__photo {
-    animation: float var(--period, var(--dur-float)) var(--ease-float) infinite alternate;
-    animation-delay: var(--phase, -2s);
+    animation: drift 1ms linear both;
+    animation-timeline: --band;
   }
 }
 
@@ -454,10 +421,9 @@
      - A scroll-driven animation ignores animation-duration entirely. Its
        progress comes from scroll position, so setting the duration to
        0.01ms does nothing to it at all.
-     - The idle float is infinite. Collapsing its duration makes it finish
-       instantly but it is still an animation that never ends, and the
-       blanket rule's `animation-iteration-count: 1` leaves it parked at
-       whatever offset it happened to reach.
+     - `animation-fill-mode: both` parks an element on a keyframe even when
+       the animation is not running, so shortening the duration is not the
+       same as removing the animation.
 
    Turning these off means removing the timeline and the animation itself.
    Because nothing is hidden outside a keyframe, that alone restores every

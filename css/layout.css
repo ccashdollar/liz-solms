@@ -253,11 +253,9 @@ html, body { overflow-x: clip; }
      the artboard edge and any daylight above it reads as a mistake. Parallax
      and edge-pinning are mutually exclusive: measured at rest the drift sat
      it 4px low at 1366, 19.8px at 390 and 34.3px at 320 — worst exactly
-     where it shows most. --float is zeroed too, because a 3.5px oscillation
-     is still a gap that opens and closes.
+     where it shows most.
      --depth-y MUST stay identical to .d-frond or the two come apart. */
   --depth-y: 0;
-  --float: 0;
   top: 0;
   right: calc(12% - var(--shift));
   width: clamp(18rem, 53vw, 46rem);
@@ -281,9 +279,8 @@ html, body { overflow-x: clip; }
   --depth: var(--depth-far);
   /* Same treatment as the smear it is welded to, and for the same reason:
      a consistent top and right margin from the window edge is the spec, and
-     drift and float both violate it. Keep in step with .d-paint-top. */
+     drift violates it. Keep in step with .d-paint-top. */
   --depth-y: 0;
-  --float: 0;
   --frond-inset: clamp(0.5rem, 1.7vw, 1.5rem);
   top: var(--frond-inset);
   right: calc(var(--frond-inset) - var(--shift));

@@ -177,11 +177,12 @@
      Every value the animation pass uses lives here, so the whole site's
      motion can be retuned — or switched off — from one place.
 
-     Two dials do almost all the work:
+     One dial does almost all the work:
        --drift-max  distance the farthest collage layer travels on scroll.
                     Set to 0 for no parallax at all.
-       --float-max  distance a layer drifts on its own, continuously.
-                    Set to 0 for no floating. */
+
+     There is deliberately no idle-motion dial — the collage moves only
+     while the reader scrolls. See motion.css section 3. */
 
   /* The wordmark's easing was the first thing that went wrong. An
      asymmetric "fast out, slow settle" curve spends 80% of its time on the
@@ -191,7 +192,6 @@
      ends, which is how a hand actually moves. */
   --ease-brush:  cubic-bezier(0.42, 0.05, 0.42, 0.96);  /* near-linear middle */
   --ease-settle: cubic-bezier(0.16, 0.84, 0.24, 1);
-  --ease-float:  cubic-bezier(0.45, 0, 0.55, 1);        /* symmetric       */
 
   /* A gentle S rather than a pure ease-out. An ease-out starts at full
      speed, and on a fade that reads as a snap followed by a long tail — the
@@ -222,7 +222,6 @@
   --dur-wipe-load: 2500ms;
 
   --dur-paint: 2400ms;   /* the wordmark being brushed on at load   */
-  --dur-float:    9s;    /* one full breath of the idle collage drift */
 
   /* Scroll parallax — the amplitude for a piece at --depth-y 1, in a band
      whose pass length is about twice the viewport. Per-band scales in
@@ -240,11 +239,6 @@
      differential against the text, which is where the effect becomes
      legible without announcing itself. */
   --drift-max: 6.8rem;
-
-  /* Idle float. Continuous, independent of scroll, at a different period
-     per layer so the collage never pulses in unison. Small: this is the
-     difference between a still image and a held breath. */
-  --float-max: 0.55rem;
 
   /* Distance a line travels as it fades in. Deliberately small — the effect
      should read as a fade that happens to settle, not as a slide. */
