@@ -357,10 +357,30 @@
      0.25 to 1.0 is what actually made it read; the amplitude here only sets
      how far the fastest layer goes.
 
-     6.8rem puts the fastest layer at about 105px per screen — roughly a 12%
-     differential against the text, which is where the effect becomes
-     legible without announcing itself. */
-  --drift-max: 6.8rem;
+     The target is roughly a 12% differential against the text, which is
+     where the effect becomes legible without announcing itself.
+
+     6.8rem was estimated, not measured, and it undershot: measured at
+     1366 it put the fastest layer at 87px per screen, a 9.6%
+     differential. That gap only became obvious after the idle float was
+     removed — the float had been quietly making up the difference, and
+     the collage read as flatter without it even though the scroll-linked
+     travel was byte-for-byte identical (A/B'd against the pre-removal
+     commit: same page height, same 243px on the fastest layer, same
+     layer-to-layer spread; the only delta was 6.32px of idle drift
+     going to zero).
+
+     Measured sweep at 1366:
+
+         6.8rem   87px/screen    9.6%   <- was here
+         8.0rem  102px/screen   11.3%
+         8.8rem  112px/screen   12.5%   <- the documented intent
+         9.6rem  122px/screen   13.6%
+        11.0rem  140px/screen   15.6%
+
+     This is the dial. Turn it up if the effect wants to be louder;
+     nothing else needs to change. */
+  --drift-max: 8.8rem;
 
   /* Distance a line travels as it fades in. Deliberately small — the effect
      should read as a fade that happens to settle, not as a slide. */
