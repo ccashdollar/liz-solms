@@ -17,6 +17,90 @@
   font-display: swap;
 }
 
+/* ---------- BODY WEBFONT: EB Garamond, self-hosted ----------
+   These are the exact binaries Google Fonts serves, taken from the
+   @fontsource/eb-garamond package (which repackages the google/fonts
+   repo), not from a distro package. That distinction matters: the
+   Debian `fonts-ebgaramond` OTFs are Duffner's v0.016 with an hhea
+   ascent of 710 against Google's 1007, so anything measured against
+   them is measured against a different box.
+
+   WHY SELF-HOST. It is not really about bytes — the browser fetches
+   the same ~49 KB either way. It is about the waterfall and the third
+   party. From the CDN the chain is HTML -> CSS on fonts.googleapis.com
+   -> font on fonts.gstatic.com: three round trips across two new
+   origins, each needing DNS, TCP and TLS, and the CSS request blocks
+   the font request behind it. Self-hosted it is HTML -> font, same
+   origin, already warm, and preloadable so it starts immediately
+   rather than after the CSS parses. It also stops every visitor's IP
+   going to Google, which is the question the developer would
+   otherwise have to answer for an EU audience.
+
+   ONLY WEIGHT 400. The old CDN request asked for 400, 500 and 400
+   italic. Nothing on this page uses 500 — the two `font-weight: 400`
+   declarations in style.css exist to hold headings AT 400 — so the
+   500 faces are simply not shipped.
+
+   BOTH SUBSETS, LOADED ON DEMAND. latin covers everything currently
+   on the page (including the em dash and ellipsis); latin-ext carries
+   the accented characters a CMS will eventually introduce. The
+   unicode-range descriptors are copied from Google's own CSS, so the
+   browser downloads latin-ext only if a character actually needs it —
+   it costs nothing until it is used. Do NOT subset these files to the
+   glyphs currently on the page: the text is CMS-driven and the first
+   unusual character would fall back to Times.
+
+   font-display: swap — text renders immediately in the fallback and
+   reflows when the face arrives, rather than showing nothing. */
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../assets/fonts/eb-garamond-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+    U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../assets/fonts/eb-garamond-latin-ext-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../assets/fonts/eb-garamond-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+    U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "EB Garamond";
+  src: url("../assets/fonts/eb-garamond-latin-ext-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* Licence: SIL Open Font License 1.1. The OFL requires the licence
+   and copyright notice to travel with the font, which is what
+   assets/fonts/EB-Garamond-OFL.txt is for. Do not delete it. */
+
+
 /* The single source of truth for the visual system.
    Every colour below was sampled directly from "Liz Solms Page.pdf". */
 
@@ -57,7 +141,9 @@
   /* Display = the traced Black Paint webfont (see @font-face above).
      Body = a Garamond. The comp uses Apple Garamond, which is Apple
      proprietary and cannot be licensed for web use. EB Garamond is the
-     closest open substitute and is served free by Google Fonts. */
+     closest open substitute, and is now self-hosted from
+     assets/fonts/ rather than pulled from Google's CDN — see the
+     @font-face block above. */
   --font-display: "Black Paint Web", "EB Garamond", Georgia, serif;
   --font-body:    "EB Garamond", "Apple Garamond", Garamond, Georgia,
                   "Times New Roman", serif;
@@ -236,10 +322,19 @@
      invisibly. If the two ever disagree the dashes visibly jump once
      per cycle. One token, used twice, so they cannot drift.
 
-     --rule-drop is the gap below the text. Measured against EB
-     Garamond's real descenders at 27px: 0.14em leaves 3px of daylight
-     under the tail of a g, which reads as attached to the word. 0.30em
-     was the first pass and floated. Below 0.12em it grazes.
+     --rule-drop is the gap below the text, and it has to be measured
+     against the SHIPPING font, not a lookalike. It was first set to
+     0.14em against Debian's fonts-ebgaramond, which is Duffner's
+     v0.016; the face this site actually serves is Google's v1.003,
+     whose g descends deeper. Same value, 0.7px less daylight.
+     Re-measured over http against the real face at 27px:
+
+         0.10em  1.33px      0.18em  3.33px
+         0.14em  2.33px      0.20em  4.33px
+         0.17em  ~2.8px      0.30em  8px    <- the first pass, floated
+
+     0.17em reads as attached to the word and still clears the tail of
+     a g at the 17px list size. Below about 0.12em it grazes.
 
      --dur-rule: about 8px/s. Deliberately slower than it seems it
      needs to be — a regular pattern travelling fast strobes, and the
@@ -247,7 +342,7 @@
   --rule-pitch:  0.34em;   /* one dash + one gap                     */
   --rule-dash:   0.17em;   /* ink within that pitch — half, so 1:1   */
   --rule-weight: 0.065em;  /* rule thickness                         */
-  --rule-drop:   0.14em;   /* gap below the deepest descender        */
+  --rule-drop:   0.17em;   /* gap below the deepest descender        */
   --dur-rule:    760ms;    /* one pitch travelled                    */
 
   /* Scroll parallax — the amplitude for a piece at --depth-y 1, in a band
