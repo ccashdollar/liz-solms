@@ -301,7 +301,10 @@ a.events__name {
 .events--empty .events__empty { display: block; }
 
 /* --- past appearances --- */
-.events__past { margin-top: var(--space-m); max-width: 26rem; }
+/* No extra margin: .events__body is a grid and its `gap` already separates
+   this from the list above. The two stacked came to 68px, which read as a
+   section break rather than a related disclosure. */
+.events__past { max-width: 26rem; }
 
 .events__past summary {
   font-family: var(--font-display);

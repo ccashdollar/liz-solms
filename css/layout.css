@@ -249,7 +249,15 @@ html, body { overflow-x: clip; }
      at ~878px while the bounding boxes still showed 62px of overlap.
      12% keeps ink over ink at every width. */
   --depth: var(--depth-far);
-  --depth-y: 1;   /* must match .d-frond exactly or a gap opens */
+  /* PINNED, not floating. This piece has to touch y=0 — the comp crops it at
+     the artboard edge and any daylight above it reads as a mistake. Parallax
+     and edge-pinning are mutually exclusive: measured at rest the drift sat
+     it 4px low at 1366, 19.8px at 390 and 34.3px at 320 — worst exactly
+     where it shows most. --float is zeroed too, because a 3.5px oscillation
+     is still a gap that opens and closes.
+     --depth-y MUST stay identical to .d-frond or the two come apart. */
+  --depth-y: 0;
+  --float: 0;
   top: 0;
   right: calc(12% - var(--shift));
   width: clamp(18rem, 53vw, 46rem);
@@ -271,7 +279,11 @@ html, body { overflow-x: clip; }
 .d-frond {
   z-index: var(--z-photo-back);
   --depth: var(--depth-far);
-  --depth-y: 1;   /* foreground, and the smear is welded to it */
+  /* Same treatment as the smear it is welded to, and for the same reason:
+     a consistent top and right margin from the window edge is the spec, and
+     drift and float both violate it. Keep in step with .d-paint-top. */
+  --depth-y: 0;
+  --float: 0;
   --frond-inset: clamp(0.5rem, 1.7vw, 1.5rem);
   top: var(--frond-inset);
   right: calc(var(--frond-inset) - var(--shift));
@@ -711,7 +723,15 @@ html, body { overflow-x: clip; }
   position: relative;
   z-index: var(--z-content);
   padding-inline: var(--gutter);
-  padding-block: 0 clamp(2rem, 1rem + 3vw, 3.5rem);
+  /* Top padding is clearance, not styling. The sage panel is absolutely
+     positioned with auto height, so how far it runs past the contact copy
+     depends on the band's height — which depends on how tall the contact
+     text sets, which depends on the font. On a device with EB Garamond
+     actually loaded the copyright ends up sitting ON the panel; measured
+     here with a fallback serif it clears by 28-64px. Rather than tune to
+     metrics that differ between the two, this reserves enough room that the
+     colophon clears the panel either way. */
+  padding-block: clamp(1.5rem, 4vw, 3rem) clamp(2rem, 1rem + 3vw, 3.5rem);
   max-width: var(--design-width);
   margin-inline: auto;
 }
@@ -767,7 +787,13 @@ html, body { overflow-x: clip; }
   .d-paper-right      { right: -5rem; top: -2%; width: 44vw; }
 
   .d-paper-teal       { left: -4rem; width: 26rem; }
-  .d-strip-pink       { right: -2rem; width: 92vw; }
+
+  /* At full width the strip sits well above the contact block. Below 900 the
+     band gets much taller relative to it and the strip lands ON the CONTACT
+     heading — measured overlapping by 9px at 390, 11px at 430, 17px at 566.
+     Lifting it by its own height clears the heading at every narrow width
+     while keeping it visually tied to the top edge of the sage panel. */
+  .d-strip-pink       { right: -2rem; width: 92vw; transform: translateY(-125%); }
 
   /* Dropped: at this width the tall strip reads as a stray line and the
      pink scrap lands on top of the contact copy. */
