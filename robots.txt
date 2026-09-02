@@ -1,0 +1,29 @@
+# Liz Solms — one-page site
+#
+# {{SITE_URL}} — replace with the live origin, no trailing slash.
+# Same token as index.html and sitemap.xml, so it is one find-and-replace.
+
+User-agent: *
+Allow: /
+
+Sitemap: {{SITE_URL}}/sitemap.xml
+
+
+# ------------------------------------------------------------------
+# AI / ANSWER-ENGINE CRAWLERS — currently ALLOWED (by omission).
+#
+# This is Liz's decision, not a technical default. Allowing them makes her
+# more likely to be quoted and cited by answer engines; blocking them is a
+# legitimate choice for a writer with views about training data.
+#
+# To BLOCK, uncomment the block below. Note this is a request, not a
+# control — it is honoured by the operators who choose to honour it.
+# ------------------------------------------------------------------
+#
+# User-agent: GPTBot
+# User-agent: ClaudeBot
+# User-agent: PerplexityBot
+# User-agent: Google-Extended
+# User-agent: CCBot
+# User-agent: Applebot-Extended
+# Disallow: /

@@ -7,6 +7,148 @@
   <title>Liz Solms — Writer</title>
   <meta name="description" content="Liz Solms writes short fiction and poetry. Her debut collection, Small Hot Rooms, is forthcoming from Serving House Press in November 2026.">
 
+  <!-- ============================================================
+       ONE PLACEHOLDER TO REPLACE: {{SITE_URL}}
+
+       Every absolute URL below uses the same token, so this is a single
+       find-and-replace across this file, robots.txt and sitemap.xml.
+
+       Replace with the live origin, NO trailing slash:
+           {{SITE_URL}}  ->  https://lizsolms.com
+
+       Absolute URLs are not optional here. Social scrapers and search
+       engines ignore relative paths — an og:image written as
+       "assets/images/og-image.jpg" simply does not appear in the card.
+       ============================================================ -->
+
+  <link rel="canonical" href="{{SITE_URL}}/">
+
+
+  <!-- ============================================================
+       ICONS
+
+       favicon.ico stays at the ROOT even though everything else lives in
+       assets/. Browsers and crawlers request /favicon.ico blind, without
+       reading the HTML, and a 404 there shows up in server logs forever.
+
+       The SVG is the primary icon on modern browsers and scales to any
+       size. The Apple one must be 180x180 on an OPAQUE background — iOS
+       composites transparency to black, which is how a good mark becomes a
+       black square on someone's home screen.
+       ============================================================ -->
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- Tints the browser chrome on Android and iOS Safari to the page
+       ground, so the frame matches the site instead of flashing white. -->
+  <meta name="theme-color" content="#F2F1E7">
+
+
+  <!-- ============================================================
+       SHARING — Open Graph and Twitter
+
+       og:image must be 1200x630 and reachable at an absolute URL. Note the
+       explicit width and height: without them some scrapers fetch the image
+       asynchronously and render the first share without it.
+
+       og:image:alt is read aloud by screen readers on social platforms —
+       it is the alt text for the card, not for the page.
+       ============================================================ -->
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Liz Solms">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="{{SITE_URL}}/">
+  <meta property="og:title" content="Liz Solms — Writer">
+  <meta property="og:description" content="Short fiction and poetry. Small Hot Rooms is forthcoming from Serving House Press in November 2026.">
+  <meta property="og:image" content="{{SITE_URL}}/assets/images/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Liz Solms — a painted paper collage in cream, sage and magenta with the writer&#39;s name lettered in black brushstrokes.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Liz Solms — Writer">
+  <meta name="twitter:description" content="Short fiction and poetry. Small Hot Rooms is forthcoming from Serving House Press in November 2026.">
+  <meta name="twitter:image" content="{{SITE_URL}}/assets/images/og-image.jpg">
+  <meta name="twitter:image:alt" content="Liz Solms — a painted paper collage with the writer&#39;s name lettered in black brushstrokes.">
+
+
+  <!-- ============================================================
+       STRUCTURED DATA
+
+       This is the highest-value markup on the page for a writer. It is how
+       a machine states facts about Liz rather than inferring them, and it
+       is what feeds author and book panels in search results and answer
+       engines.
+
+       TWO FIELDS ARE DELIBERATELY ABSENT because a placeholder would be
+       worse than nothing — an invalid ISBN or a fake URL produces a
+       structured-data error rather than an empty field:
+
+       1. The book ISBN. Once Serving House Press supplies it, add to the
+          Book node:
+              "isbn": "978-1-xxxxxx-xx-x",
+
+       2. Liz&#39;s profiles elsewhere. sameAs is what links this page to the
+          same person on other sites, and it does more for search and
+          answer-engine confidence than anything else here. Add to the
+          Person node, using her real pages:
+              "sameAs": [
+                "https://www.instagram.com/…",
+                "https://servinghousepress.com/…",
+                "https://www.postroadmag.com/…"
+              ],
+       ============================================================ -->
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "{{SITE_URL}}/#liz-solms",
+        "name": "Liz Solms",
+        "jobTitle": "Writer",
+        "url": "{{SITE_URL}}/",
+        "image": "{{SITE_URL}}/assets/images/liz.webp",
+        "email": "mailto:Liz.solms.writer@gmail.com",
+        "description": "Liz Solms writes short fiction and poetry. Born and raised in Philadelphia, she splits her time between Jamaica and New Orleans. A two-time Pushcart Prize nominee, her work has appeared in Post Road, Wasafiri, The Village Voice, War Literature & The Arts, Diner Journal and Reed Magazine.",
+        "knowsAbout": ["Short fiction", "Poetry"],
+        "alumniOf": {
+          "@type": "CollegeOrUniversity",
+          "name": "Bennington College"
+        }
+      },
+      {
+        "@type": "Book",
+        "@id": "{{SITE_URL}}/#small-hot-rooms",
+        "name": "Small Hot Rooms",
+        "author": { "@id": "{{SITE_URL}}/#liz-solms" },
+        "genre": "Short stories",
+        "inLanguage": "en",
+        "datePublished": "2026-11",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Serving House Press"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "{{SITE_URL}}/#website",
+        "url": "{{SITE_URL}}/",
+        "name": "Liz Solms",
+        "inLanguage": "en",
+        "about": { "@id": "{{SITE_URL}}/#liz-solms" },
+        "publisher": { "@id": "{{SITE_URL}}/#liz-solms" }
+      }
+    ]
+  }
+  </script>
+
+
   <!-- Preload the display face: it renders the wordmark, the first thing
        anyone sees. Without this the browser only discovers the font after
        parsing CSS, costing a round trip. -->
