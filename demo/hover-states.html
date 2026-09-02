@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hover states — Liz Solms</title>
+<meta name="robots" content="noindex">
+<link rel="preload" href="../assets/fonts/black-paint-web.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+/* ============================================================
+   DEMO CHROME — not part of the site. Delete this folder
+   before handing off.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--c-ground); color: var(--c-ink);
+  font-family: var(--font-body); font-size: var(--step-0);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 58rem; margin: 0 auto; padding: 3rem 1.5rem 8rem; }
+.lede { max-width: 34rem; }
+.lede h1 {
+  font-family: var(--font-display); font-size: var(--step-3);
+  letter-spacing: var(--tracking-display); line-height: 1.1;
+  margin: 0 0 1rem;
+}
+.lede p { font-size: var(--step-0); margin: 0 0 0.6rem; }
+.lede code { font-size: 0.85em; background: #E5E3D4; padding: 0.1em 0.35em; }
+
+.card {
+  border-top: 1px solid rgba(0,0,0,0.18);
+  padding: 2.4rem 0 2.8rem;
+}
+.card__head { display: flex; gap: 0.8rem; align-items: baseline; flex-wrap: wrap; }
+.card__num {
+  font-family: var(--font-display); font-size: var(--step-2);
+  letter-spacing: var(--tracking-display); line-height: 1;
+}
+.card__name { font-size: var(--step-1); font-weight: 500; }
+.card__why { max-width: 38rem; margin: 0.5rem 0 1.6rem; opacity: 0.78; font-size: var(--step--1); }
+.card__why b { font-weight: 500; opacity: 1; }
+
+.tag {
+  font-family: var(--font-body); font-size: 0.72rem; letter-spacing: 0.09em;
+  text-transform: uppercase; border: 1px solid rgba(0,0,0,0.35);
+  padding: 0.15em 0.5em; border-radius: 2px; line-height: 1.6; opacity: 0.7;
+}
+.tag--warn { border-color: #B4553C; color: #8A3E2A; opacity: 1; }
+.tag--good { border-color: #4F7A46; color: #3C6135; opacity: 1; }
+
+.specimen { margin-bottom: 1.5rem; }
+.specimen__label {
+  font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase;
+  opacity: 0.45; margin-bottom: 0.5rem;
+}
+
+/* Display-scale specimen — mirrors .work__outlet / .events__name */
+.display-links { font-size: var(--step-0); line-height: var(--leading-list); }
+.display-links li { margin-bottom: 0.35rem; list-style: none; }
+.display-links ul { margin: 0; padding: 0; }
+.display-links em { font-style: italic; }
+
+/* Prose specimen — mirrors .bio */
+.prose-spec {
+  font-size: var(--step-1); line-height: var(--leading-body);
+  max-width: 30rem; margin: 0;
+}
+
+/* ============================================================
+   THE HOVER STATES
+   Each one is a single class. Nothing below needs per-link
+   markup, and every one works on arbitrary text length.
+   ============================================================ */
+
+/* Shared resting state — identical to the live site today. */
+.hv {
+  color: var(--c-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.hv:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; border-radius: 2px; }
+
+/* ---------- 0. CURRENT — the baseline you have now ---------- */
+.hv--now { transition: color 120ms linear; }
+@media (hover: hover) { .hv--now:hover { color: var(--c-link-hover); } }
+
+
+/* ---------- 1a. PAINTED SWIPE — yellow strip, black type ----------
+   The strip is the real scanned asset, so the leading edge is ragged
+   and the top edge wavers. box-decoration-break:clone is what makes
+   it survive a link that wraps across two lines: without it the
+   browser paints ONE background across the whole inline box and the
+   swipe on line two starts mid-stroke. */
+.hv--swipe {
+  background-image: url("../assets/images/strip-yellow-top.webp");
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 108%;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  padding: 0.08em 0.22em;
+  margin: 0 -0.22em;
+  transition: background-size 340ms var(--ease-brush), color 200ms linear;
+}
+@media (hover: hover) {
+  .hv--swipe:hover { background-size: 100% 108%; color: var(--c-ink); text-decoration-color: transparent; }
+}
+
+/* ---------- 1b. PAINTED SWIPE — black strip, TRUE magenta ----------
+   The comp's link colour is #FF00FF. It measures 2.76:1 on the
+   off-white ground, which is why the live site uses a darkened
+   #C100C1. On the ink strip it measures 6.05:1 and passes — so
+   the hover is the one place the real colour gets to exist.
+
+   strip-ink.webp is the yellow strip's OWN torn silhouette repainted
+   near-black, so the ragged edge is the same hand as the rest of the
+   collage rather than a shape I invented. 4 KB. */
+.hv--swipe-black {
+  background-image: url("../assets/images/strip-ink.webp");
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 128%;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  padding: 0.08em 0.24em;
+  margin: 0 -0.24em;
+  transition: background-size 380ms var(--ease-brush), color 220ms linear;
+}
+@media (hover: hover) {
+  .hv--swipe-black:hover { background-size: 100% 128%; color: var(--c-link-comp); text-decoration-color: transparent; }
+}
+
+/* ---------- 2. TORN-PAPER UNDERLINE ----------
+   The 1px hairline is replaced by a slice of a real torn strip. At
+   rest it is a thin ragged rule — still a non-colour signal, which
+   prose links need. On hover it thickens and rises.
+
+   The pale pink strip was the first choice and had to go: at hairline
+   weight it was almost invisible on the ground, and this is exactly
+   the signal that must not be quiet. Blue carries. */
+.hv--torn {
+  text-decoration: none;
+  background-image: url("../assets/images/strip-blue.webp");
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 100% 0.14em;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  padding-bottom: 0.18em;
+  transition: background-size 260ms var(--ease-settle),
+              background-position 260ms var(--ease-settle);
+}
+@media (hover: hover) {
+  .hv--torn:hover { background-size: 100% 0.46em; background-position: 0 96%; }
+}
+
+/* ---------- 3. BRUSH-REPAINT UNDERLINE ----------
+   The same mask geometry as the wordmark's paint-in: a 250%-wide
+   mask with a soft leading edge, parked off to the right and slid
+   to 0. Same --ease-brush curve, so it is recognisably the same
+   hand that painted the name at the top of the page. */
+.hv--brush {
+  position: relative;
+  text-decoration-color: rgba(193,0,193,0.45);
+  transition: color 200ms linear;
+}
+.hv--brush::after {
+  content: "";
+  position: absolute;
+  left: -0.06em; right: -0.06em; bottom: -0.16em;
+  height: 0.17em;
+  background: currentColor;
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 40%, rgba(0,0,0,0) 55%);
+          mask-image: linear-gradient(90deg, #000 0, #000 40%, rgba(0,0,0,0) 55%);
+  -webkit-mask-size: 250% 100%;  mask-size: 250% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: 100% center; mask-position: 100% center;
+  transition: -webkit-mask-position 520ms var(--ease-brush),
+                      mask-position 520ms var(--ease-brush);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .hv--brush:hover { color: var(--c-link-hover); }
+  .hv--brush:hover::after { -webkit-mask-position: 0% center; mask-position: 0% center; }
+}
+
+/* ---------- 4. CROOKED TAPE LIFT ----------
+   inline-block, so this one CANNOT go in running prose — an
+   inline-block link will not break across lines and a rotation
+   nudges the line box. Display-scale links only. */
+.hv--tape {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  padding: 0.1em 0.3em;
+  margin: 0 -0.3em;
+  rotate: 0deg;
+  translate: 0 0;
+  transition: rotate 260ms var(--ease-settle), translate 260ms var(--ease-settle),
+              filter 260ms var(--ease-settle), color 200ms linear;
+}
+.hv--tape::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: url("../assets/images/strip-blue.webp") no-repeat center / 100% 100%;
+  z-index: -1;
+  opacity: 0;
+  scale: 0.86 0.7;
+  transition: opacity 220ms linear, scale 300ms var(--ease-settle);
+}
+@media (hover: hover) {
+  .hv--tape:hover {
+    rotate: -0.9deg; translate: 0 -2px; color: var(--c-ink);
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.22));
+  }
+  .hv--tape:hover::before { opacity: 1; scale: 1 1; }
+}
+
+/* ---------- 5. THE PAINTED WORD ----------
+   Not the ransom-note PNG swap. The traced Black Paint webfont IS
+   the painted alphabet, so the word can simply change face — no
+   image per glyph, text stays selectable, find-in-page still works.
+   The painted copy is layered over the Garamond one and cross-faded
+   so the line never reflows. Use once, on a fixed word. */
+.hv--painted {
+  position: relative;
+  display: inline-block;
+  text-decoration-color: rgba(193,0,193,0.5);
+  transition: color 260ms linear;
+}
+.hv--painted::after {
+  content: attr(data-word);
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.78em;
+  letter-spacing: 0.02em;
+  color: var(--c-ink);
+  opacity: 0;
+  scale: 0.96;
+  rotate: -1.2deg;
+  transition: opacity 300ms var(--ease-brush), scale 380ms var(--ease-settle),
+              rotate 380ms var(--ease-settle);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .hv--painted:hover { color: transparent; text-decoration-color: transparent; }
+  .hv--painted:hover::after { opacity: 1; scale: 1; rotate: 0.8deg; }
+}
+
+/* ============================================================
+   REDUCED MOTION — the state still changes, the travel does not.
+   A hover that vanishes entirely is worse than one that snaps.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .hv, .hv::after, .hv::before { transition-duration: 1ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="lede">
+    <h1>Hover states</h1>
+    <p>Six directions on the real type, at the real sizes, in the real colours.
+       Hover each one. Tab through them too — the focus ring is the same on all six.</p>
+    <p>Each is a single class with no per-link markup, so any of them can be
+       dropped onto <code>a</code> and survive CMS text of any length.</p>
+    <p><b>This folder is not part of the site.</b> Delete <code>demo/</code> before handoff.</p>
+  </div>
+
+  <!-- ===================================================== 0 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">0</span>
+      <span class="card__name">What you have now</span>
+      <span class="tag">baseline</span>
+    </div>
+    <p class="card__why">Magenta darkens. It is the only thing on the page that still
+      looks like default web styling.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--now" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--now" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--now" href="#">Ongoing</a> you can
+        <a class="hv hv--now" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 1a -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">1a</span>
+      <span class="card__name">Painted swipe — yellow strip</span>
+      <span class="tag tag--good">works in prose</span>
+    </div>
+    <p class="card__why">A real scanned strip grows from the left, so the leading edge is
+      ragged and the top edge wavers — it reads as <b>stuck on</b> rather than drawn.
+      Type flips to black — measured off the rendered swatch at <b>11.6:1</b>.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--swipe" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--swipe" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose — including one that wraps across a line break</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--swipe" href="#">Ongoing</a> you can
+        <a class="hv hv--swipe" href="#">email her here, or write to her at the address below</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 1b -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">1b</span>
+      <span class="card__name">Painted swipe — black smear, true magenta</span>
+      <span class="tag tag--good">reclaims #FF00FF</span>
+    </div>
+    <p class="card__why">The comp's link colour is pure <b>#FF00FF</b>. It measures 2.76:1 on
+      the off-white ground and fails AA, which is why the live site runs a darkened #C100C1.
+      On the ink strip, measured off the rendered swatch, it is <b>6.05:1</b> and passes. The restraint on the resting
+      state stops being a compromise and becomes a setup for this. The strip is the yellow
+      one's own torn silhouette repainted near-black, so the ragged edge is the same hand as
+      the rest of the collage.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--swipe-black" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--swipe-black" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--swipe-black" href="#">Ongoing</a> you can
+        <a class="hv hv--swipe-black" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 2 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">2</span>
+      <span class="card__name">Torn-paper underline</span>
+      <span class="tag tag--good">works in prose</span>
+    </div>
+    <p class="card__why">The hairline is replaced by a slice of a real torn strip. At rest it
+      is a thin ragged rule — still a non-colour signal, which links inside prose need. On
+      hover it thickens and rises, like the strip sliding up from under the baseline.
+      Pale pink was the first choice and vanished at hairline weight — the one signal that
+      must not be quiet. Blue carries.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--torn" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--torn" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--torn" href="#">Ongoing</a> you can
+        <a class="hv hv--torn" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 3 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">3</span>
+      <span class="card__name">Brush-repaint underline</span>
+      <span class="tag tag--good">works in prose</span>
+    </div>
+    <p class="card__why">The same mask geometry and the same <b>--ease-brush</b> curve as the
+      wordmark's paint-in at the top of the page: a soft leading edge, parked off to the
+      right, slid to zero. The wordmark paints on at load; links repaint when you touch
+      them. Same hand, twice.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--brush" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--brush" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+    <div class="specimen">
+      <div class="specimen__label">In prose</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--brush" href="#">Ongoing</a> you can
+        <a class="hv hv--brush" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== 4 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">4</span>
+      <span class="card__name">Crooked tape lift</span>
+      <span class="tag tag--warn">display links only</span>
+    </div>
+    <p class="card__why">A blue strip snaps in behind the word, which tilts and lifts off the
+      page with a paper shadow. Hand-placed rather than CSS-placed. It needs
+      <b>inline-block</b>, so it cannot break across a line — this one is for
+      <b>.work__outlet</b> and <b>.events__name</b>, never for prose. Black on the blue
+      measures 5.2:1.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">Display links</div>
+      <div class="display-links"><ul>
+        <li><a class="hv hv--tape" href="#"><em>The Paris Review</em></a></li>
+        <li><a class="hv hv--tape" href="#">Liz.solms.writer@gmail.com</a></li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ===================================================== 5 -->
+  <section class="card">
+    <div class="card__head">
+      <span class="card__num">5</span>
+      <span class="card__name">The painted word</span>
+      <span class="tag tag--warn">use once</span>
+    </div>
+    <p class="card__why">Not the ransom-note image swap I talked you out of. Your traced
+      Black Paint webfont <b>is</b> the painted alphabet, so the word just changes face — no
+      image per glyph, the text stays selectable, find-in-page still works. The painted copy
+      is layered over the Garamond one and cross-faded, so the line never reflows.
+      An easter egg on the zine's name, not a link system.</p>
+
+    <div class="specimen">
+      <div class="specimen__label">On a fixed word</div>
+      <p class="prose-spec">To reach Liz and/or subscribe to her zine
+        <a class="hv hv--painted" data-word="Ongoing" href="#">Ongoing</a> you can
+        <a class="hv hv--brush" href="#">email her here</a>.</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
