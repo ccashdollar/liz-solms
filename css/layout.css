@@ -164,7 +164,10 @@ html, body { overflow-x: clip; }
   justify-self: end;
   margin-inline-end: clamp(0rem, 4%, 3rem);
 }
-.portrait__img { width: 100%; height: auto; }
+.portrait__img {
+   width: 100%; height: auto; 
+   z-index: 100;
+}
 .portrait__strip { display: none; }
 
 /* 900px is the single-column / two-column boundary. If it changes, the
@@ -403,7 +406,7 @@ html, body { overflow-x: clip; }
 @media (max-width: 899px) {
   .events {
     --photo-w:     clamp(11rem, 40vw, 22rem);
-    --photo-bleed: clamp(0rem, calc(9rem - 12vw), 6rem);
+    --photo-bleed: clamp(0rem, calc(4rem - 12vw), 6rem);
     --photo-seen:  calc(var(--photo-w) - var(--photo-bleed));
   }
 
@@ -440,6 +443,12 @@ html, body { overflow-x: clip; }
     max-width: none;
     height: auto;
   }
+
+    .portrait__img {
+   position: relative;
+   left: 100px;
+  }
+
 }
 
 /* Above 900 the diving photo leaves the flow and behaves like the rest of
@@ -769,7 +778,10 @@ html, body { overflow-x: clip; }
      daylight; 43vw closes to 5px but the smear starts creeping under the
      wordmark and its backdrop contrast falls from 18.4:1 to 10.8:1. This
      pair is the largest that leaves the wordmark completely clear. */
-  .d-frond            { right: calc(var(--frond-inset) - var(--shift)); width: 42vw; }
+  .d-frond            { 
+   right: calc(var(--frond-inset) - var(--shift)); width: 42vw; 
+   z-index: 1000;
+}
 
 
   /* Was landing across the second bio paragraph. Dropped below the copy,
