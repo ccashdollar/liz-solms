@@ -284,7 +284,7 @@ html, body { overflow-x: clip; }
      a consistent top and right margin from the window edge is the spec, and
      drift violates it. Keep in step with .d-paint-top. */
   --depth-y: 0;
-  --frond-inset: clamp(0.5rem, 1.7vw, 1.5rem);
+  --frond-inset: clamp(0.1rem, 1.7vw, 1.5rem);
   top: var(--frond-inset);
   right: calc(var(--frond-inset) - var(--shift));
   width: clamp(11rem, 32vw, 27rem);
@@ -690,7 +690,7 @@ html, body { overflow-x: clip; }
     margin-inline-end: 0;
   }
   .portrait__img {
-    aspect-ratio: 0.8;           /* head to mid-torso, per the study */
+    aspect-ratio: 0.6;           /* head to mid-torso, per the study */
     object-fit: cover;
     object-position: 50% 0%;     /* keep the head, crop from the bottom */
   }
@@ -780,7 +780,7 @@ html, body { overflow-x: clip; }
      pair is the largest that leaves the wordmark completely clear. */
   .d-frond            { 
    right: calc(var(--frond-inset) - var(--shift)); width: 42vw; 
-   z-index: 1000;
+   /* z-index: 1000; */
 }
 
 
