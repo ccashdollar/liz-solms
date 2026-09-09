@@ -321,23 +321,23 @@
       <!-- PURCHASE CTA — the green blob is this button's background,
            not collage, so it lives in CSS on the element itself. -->
       <!-- TODO: swap href for the real bookseller / publisher link -->
-      <a class="purchase" href="#">
+      <div class="purchase" href="#">
         <span class="purchase__kicker">Purchase</span>
         <span class="purchase__title">Small Hot Rooms</span>
-        <span class="purchase__action">Here</span>
-      </a>
+        <span class="purchase__action">{{ coming soon }}</span>
+      </div>
 
       <section class="work" aria-labelledby="work-heading">
         <h2 class="section-heading" id="work-heading">Selected Published Work and Reviews</h2>
         <ul class="work__list">
           <!-- TODO: replace each href with the live URL for the piece -->
-          <li><span class="work__title">Last Day on Earth</span> &ndash; <a class="work__outlet" href="#">Reed Magazine</a></li>
-          <li><span class="work__title">The Smell of Water</span> &ndash; <a class="work__outlet" href="#">Flash Fiction Magazine</a></li>
-          <li><span class="work__title">Jungle Room</span> &ndash; <a class="work__outlet" href="#">Break Water Review</a></li>
-          <li><span class="work__title">Small Rooms, Seven Summers</span> &ndash; <a class="work__outlet" href="#">Philadelphia Stories</a></li>
-          <li><span class="work__title">Wasafiri Issue 87</span> &ndash; <a class="work__outlet" href="#">Wasafiri</a></li>
-          <li><span class="work__title">WLA Journal Issue 29</span> &ndash; <a class="work__outlet" href="#">WLA Journal</a></li>
-          <li><span class="work__title">Post Road Issue 26</span> &ndash; <a class="work__outlet" href="#">Post Road Magazine</a></li>
+          <li><span class="work__title">Last Day on Earth</span> &ndash; <a class="work__outlet" href="https://www.reedmag.org/product-page/reed-magazine-issue-158-e-book-1" target="_blank">Reed Magazine</a></li>
+          <li><span class="work__title">The Smell of Water</span> &ndash; <a class="work__outlet" href="https://flashfictionmagazine.com/blog/2025/06/27/the-smell-of-water/" target="_blank">Flash Fiction Magazine</a></li>
+          <li><span class="work__title">Jungle Room</span> &ndash; <a class="work__outlet" href="https://www.breakwaterreview.com/single-post/2016/08/27/Jungle-Room-by-Liz-Solms" target="_blank">Break Water Review</a></li>
+          <li><span class="work__title">Small Rooms, Seven Summers</span> &ndash; <a class="work__outlet" href="https://philadelphiastories.org/article/small-rooms-seven-numbers-sandy-crimmins-poetry-prize-honorable-mention/" target="_blank">Philadelphia Stories</a></li>
+          <li><span class="work__title">Wasafiri Issue 87</span> &ndash; <a class="work__outlet" href="https://www.wasafiri.org/issues/wasafiri-issue-87/" target="_blank">Wasafiri</a></li>
+          <li><span class="work__title">WLA Journal Issue 29</span> &ndash; <a class="work__outlet" href="https://www.wlajournal.com/copy-of-29" target="_blank">WLA Journal</a></li>
+          <li><span class="work__title">Post Road Issue 26</span> &ndash; <a class="work__outlet" href="https://www.postroadmag.com/2020/07/23/issue-26/" target="_blank">Post Road Magazine</a></li>
         </ul>
       </section>
       </div><!-- /.works-block -->
@@ -346,6 +346,8 @@
         <h2 class="section-heading" id="events-heading">Events &plus; Appearances</h2>
 
         <div class="events__body">
+
+          <strong>Coming Soon</strong>
 
           <!-- ============================================================
                THREE STATES. The CMS renders whichever applies:
@@ -372,10 +374,11 @@
                An event with no page renders the same element as a <span>
                instead of an <a> — same class, same styling, no link. The CMS
                should not emit an empty href. -->
+          
+          <!-- 
           <ul class="events__list">
             <li class="events__item">
               <time class="events__date" datetime="2026-11-12">12 November 2026</time>
-              <!-- TODO: real URLs for each event -->
               <a class="events__name" href="#"><cite>Small Hot Rooms</cite> launch reading</a>
               <span class="events__venue">Serving House Press &middot; Philadelphia</span>
             </li>
@@ -400,10 +403,12 @@
               <span class="events__venue">Philadelphia</span>
             </li>
           </ul>
+          -->
 
           <!-- Shown only when the list above is empty. An empty state should
                offer somewhere to go, not just apologise — here it points at
                the zine, which is the one thing a reader can act on. -->
+          
           <p class="events__empty">
             No readings on the calendar just now. Liz announces new dates in her
             zine <cite>Ongoing</cite> &mdash;
@@ -415,7 +420,8 @@
                announced correctly by screen readers, no JavaScript. Collapsed
                so a long history never buries what is coming next, but present
                so the page still has substance between engagements. -->
-          <details class="events__past">
+          <!-- 
+               <details class="events__past">
             <summary>Past appearances</summary>
             <ul class="events__list events__list--past">
               <li class="events__item">
@@ -435,6 +441,7 @@
               </li>
             </ul>
           </details>
+          -->
 
           <img class="events__photo" src="assets/images/diving-664w.webp"
                srcset="assets/images/diving-400w.webp 400w,
